@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Генератор гирлянд из круглых ракушек 15 и 40 мм: предпросмотр на стене, 3D и схема сборки.">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Подвески из ракушек</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@500&display=swap">
+<style>
+/* Layout: слева колонка настроек, справа закреплённый предпросмотр; ниже — инструкция во всю ширину. */
+:root{
+  --bg:#edf0f2; --panel:#fbfcfc; --ink:#18242c; --muted:#586872; --line:#d3dbe0;
+  --accent:#0d6b74; --accent-ink:#ffffff; --chip:#e2e8eb; --warn:#a2542f;
+  --display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12181c; --panel:#1a2228; --ink:#e6edf0; --muted:#94a4ad; --line:#2d3941;
+    --accent:#5cc2c9; --accent-ink:#06282b; --chip:#242f36; --warn:#e0946c; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12181c; --panel:#1a2228; --ink:#e6edf0; --muted:#94a4ad; --line:#2d3941;
+  --accent:#5cc2c9; --accent-ink:#06282b; --chip:#242f36; --warn:#e0946c; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+h1{font-family:var(--display);font-weight:500;font-size:22px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+.main{display:grid;grid-template-columns:330px minmax(0,1fr);gap:20px;align-items:start}
+.controls{display:flex;flex-direction:column;gap:14px;min-width:0}
+.stage{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 12px);min-width:0;display:flex;flex-direction:column;gap:10px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.group h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0;font-weight:600}
+.row{display:flex;flex-direction:column;gap:4px}
+.row .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.row label{font-weight:500}
+.row output{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600;white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:7px 8px}
+.check{display:flex;gap:8px;align-items:center}
+.check input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.walls{display:flex;flex-wrap:wrap;gap:8px}
+.walls button{width:38px;height:38px;border-radius:8px;border:2px solid var(--line);padding:0;cursor:pointer;background-size:cover}
+.walls button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.btn{font:inherit;font-weight:500;color:var(--ink);background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.canvasbox{position:relative;width:100%;aspect-ratio:4/3;max-height:74vh;max-width:100%;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--panel)}
+canvas{display:block;width:100%;height:100%}
+#cv3{position:absolute;inset:0;touch-action:none;cursor:grab}
+.hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:#ffffff;background:rgba(20,30,36,.6);padding:3px 8px;border-radius:6px;pointer-events:none}
+.bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-size:22px;font-variant-numeric:tabular-nums;font-weight:600}
+.stat span{color:var(--muted);font-size:13px}
+.guide{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.guide h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0}
+.guide h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0;font-weight:600}
+.guide ol{margin:0;padding-left:20px;max-width:75ch;display:flex;flex-direction:column;gap:6px}
+.guide p{margin:0;max-width:75ch}
+.tablebox{overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--chip);font-weight:600;white-space:nowrap}
+td.num{white-space:nowrap}
+td.f{font-family:ui-monospace,Consolas,monospace;font-size:13px;min-width:220px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;z-index:20;max-width:90vw}
+.note{color:var(--muted);font-size:13px}
+@media (max-width:860px){
+  .main{grid-template-columns:minmax(0,1fr)}
+  .stage{position:static;order:-1}
+  .canvasbox{aspect-ratio:4/5}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Подвески из ракушек</h1>
+    <p>Генератор гирлянд из круглых ракушек 15 и 40 мм: настройте, посмотрите на стене, скачайте схему сборки.</p>
+  </header>
+
+  <div class="main">
+    <div class="controls">
+      <div class="group">
+        <h2>Готовые варианты</h2>
+        <div class="btns">
+          <button class="btn" data-preset="photo">Как на фото</button>
+          <button class="btn" data-preset="air">Воздушная</button>
+          <button class="btn" data-preset="drop">Каскад</button>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="shuffle">Перемешать</button>
+          <span class="note" style="align-self:center">вариант № <span id="seedOut"></span></span>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Размер композиции</h2>
+        <div class="row"><div class="top"><label for="w">Ширина</label><output id="o_w"></output></div><input type="range" id="w" min="40" max="200" step="5"></div>
+        <div class="row"><div class="top"><label for="h">Самая длинная нить</label><output id="o_h"></output></div><input type="range" id="h" min="30" max="200" step="5"></div>
+      </div>
+
+      <div class="group">
+        <h2>Нити</h2>
+        <div class="row"><div class="top"><label for="n">Нитей в ряду</label><output id="o_n"></output></div><input type="range" id="n" min="4" max="40" step="1"></div>
+        <div class="row"><div class="top"><label for="layers">Рядов в глубину</label><output id="o_layers"></output></div><input type="range" id="layers" min="1" max="3" step="1"></div>
+        <div class="row"><label for="shape">Форма нижнего края</label>
+          <select id="shape">
+            <option value="arch">Арка — длинные по краям</option>
+            <option value="drop">Каскад — длинные в центре</option>
+            <option value="left">Диагональ — длинные слева</option>
+            <option value="right">Диагональ — длинные справа</option>
+            <option value="wave">Волна</option>
+            <option value="flat">Ровная</option>
+          </select></div>
+        <div class="row"><div class="top"><label for="minlen">Самая короткая нить</label><output id="o_minlen"></output></div><input type="range" id="minlen" min="15" max="100" step="5"></div>
+        <div class="row"><div class="top"><label for="jitter">Разброс длины</label><output id="o_jitter"></output></div><input type="range" id="jitter" min="0" max="40" step="1"></div>
+      </div>
+
+      <div class="group">
+        <h2>Ракушки</h2>
+        <div class="row"><div class="top"><label for="big">Доля крупных (40 мм)</label><output id="o_big"></output></div><input type="range" id="big" min="0" max="100" step="5"></div>
+        <div class="row"><label for="pattern">Чередование</label>
+          <select id="pattern">
+            <option value="mix">Случайно</option>
+            <option value="rhythm">Ритм — повторяющийся узор</option>
+            <option value="bigtop">Крупные сверху, мелкие снизу</option>
+            <option value="bigbottom">Мелкие сверху, крупные снизу</option>
+          </select></div>
+        <div class="row"><div class="top"><label for="gap">Зазор между ракушками</label><output id="o_gap"></output></div><input type="range" id="gap" min="0" max="40" step="1"></div>
+        <div class="row"><label for="tone">Оттенок</label>
+          <select id="tone">
+            <option value="white">Белый перламутр</option>
+            <option value="cream">Кремовый</option>
+            <option value="pink">Розовый</option>
+            <option value="mixed">Микс с золотистыми</option>
+          </select></div>
+      </div>
+
+      <div class="group">
+        <h2>Стена и сцена</h2>
+        <div class="walls" id="walls"></div>
+        <label class="check"><input type="checkbox" id="light"> Гирлянда-подсветка за ракушками</label>
+        <label class="check"><input type="checkbox" id="sway"> Лёгкое покачивание</label>
+        <label class="check"><input type="checkbox" id="dims"> Показывать размеры</label>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="bar">
+        <div class="btns">
+          <button class="btn" id="v_wall" aria-pressed="true">На стене</button>
+          <button class="btn" id="v_3d" aria-pressed="false">3D</button>
+          <button class="btn" id="v_scheme" aria-pressed="false">Схема</button>
+        </div>
+        <div class="btns">
+          <button class="btn" id="savePng">Скачать картинку</button>
+          <button class="btn primary" id="saveGuide">Скачать инструкцию</button>
+        </div>
+      </div>
+      <div class="canvasbox"><canvas id="cv"></canvas><canvas id="cv3" hidden></canvas><div class="hint" id="hint3" hidden>Тяните, чтобы повернуть · колесо или щипок — приблизить</div></div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </div>
+
+  <section class="guide">
+    <div class="bar">
+      <h2>Как это повторить</h2>
+      <div class="btns">
+        <button class="btn" id="copyText">Скопировать текстом</button>
+        <button class="btn primary" id="saveGuide2">Скачать инструкцию</button>
+      </div>
+    </div>
+    <h3>Что купить</h3>
+    <ol id="shop" style="list-style:disc"></ol>
+    <h3>Порядок сборки</h3>
+    <ol id="steps"></ol>
+    <h3>Схема нитей — собирать сверху вниз</h3>
+    <p class="note">Б — ракушка 40 мм, м — ракушка 15 мм. Запись «3м» значит три мелкие подряд. Номера нитей совпадают с номерами в режиме «Схема».</p>
+    <div class="tablebox"><table><thead><tr><th>№</th><th>Ряд</th><th>От левого края</th><th>Длина</th><th>Б / м</th><th>Порядок ракушек</th></tr></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+var TOP = 15; // мм от рейки до первой ракушки
+var DEF = {w:90,h:100,n:16,layers:2,shape:"arch",minlen:45,jitter:15,big:55,pattern:"mix",gap:6,tone:"white",wall:"peach",light:false,sway:true,dims:true,seed:1207,view:"wall"};
+var PRESETS = {
+  photo:{n:22,layers:3,shape:"arch",minlen:40,jitter:28,big:60,pattern:"mix",gap:4,tone:"white"},
+  air:{n:12,layers:1,shape:"wave",minlen:50,jitter:12,big:35,pattern:"rhythm",gap:18,tone:"white"},
+  drop:{n:18,layers:2,shape:"drop",minlen:30,jitter:8,big:50,pattern:"bigtop",gap:5,tone:"cream"}
+};
+var WALLS = [
+  {id:"peach",name:"Персиковая краска",c:"#f0d9c9",dark:false},
+  {id:"white",name:"Белая",c:"#f3f2ee",dark:false},
+  {id:"concrete",name:"Серый бетон",c:"#b7babb",dark:false},
+  {id:"sage",name:"Шалфейная",c:"#a7b79f",dark:false},
+  {id:"navy",name:"Тёмно-синяя",c:"#22364f",dark:true},
+  {id:"graphite",name:"Графит",c:"#2b2e33",dark:true},
+  {id:"brick",name:"Кирпич",c:"#a65a43",dark:true},
+  {id:"wood",name:"Деревянные панели",c:"#b78a5d",dark:false}
+];
+var TONES = {
+  white:[["#fbfaf6","#d6dbd8"]],
+  cream:[["#f8eed9","#dac8a2"]],
+  pink:[["#f8e3e3","#dab6bd"]],
+  mixed:[["#fbfaf6","#d6dbd8"],["#f8eed9","#dac8a2"],["#ecd7a2","#c4a258"]]
+};
+var LAYER_NAMES = ["А","Б","В"];
+var LAYER_COLORS = ["#1b2a33","#0d6b74","#a2542f"];
+
+var P = Object.assign({}, DEF);
+try{ var saved = JSON.parse(localStorage.getItem("shellgen")||"null"); if(saved) for(var k in DEF) if(typeof saved[k]===typeof DEF[k]) P[k]=saved[k]; }catch(e){}
+if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) P.sway=false;
+
+function $(id){return document.getElementById(id)}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+/* ---------- модель ---------- */
+function profile(t){
+  var m=P.minlen/100, e=Math.abs(2*t-1), f;
+  switch(P.shape){
+    case "arch": f=Math.pow(e,1.5); break;
+    case "drop": f=1-Math.pow(e,1.5); break;
+    case "left": f=1-t; break;
+    case "right": f=t; break;
+    case "wave": f=0.5+0.5*Math.sin(t*Math.PI*3-Math.PI/2); break;
+    default: f=1;
+  }
+  return m+(1-m)*f;
+}
+function fillStrand(target,rnd){
+  var p=P.big/100, items=[], y=TOP, cycle=null, ci=0;
+  if(P.pattern==="rhythm"){
+    if(p<=0) cycle=[15]; else if(p>=1) cycle=[40];
+    else if(p<0.5){cycle=[40];var k=clamp(Math.round((1-p)/p),1,8);while(k--)cycle.push(15)}
+    else {cycle=[];var m=clamp(Math.round(p/(1-p)),1,8);while(m--)cycle.push(40);cycle.push(15)}
+    ci=Math.floor(rnd()*cycle.length);
+  }
+  var nt=TONES[P.tone].length;
+  for(var guard=0;guard<400;guard++){
+    var d, fr=clamp((y-TOP)/Math.max(1,target-TOP),0,1);
+    if(cycle){d=cycle[ci%cycle.length];ci++}
+    else if(P.pattern==="bigtop") d=rnd()<clamp(p+(0.5-fr)*1.3,0,1)&&p>0?40:15;
+    else if(P.pattern==="bigbottom") d=rnd()<clamp(p+(fr-0.5)*1.3,0,1)&&p>0?40:15;
+    else d=rnd()<p?40:15;
+    if(p>=1) d=40; if(p<=0) d=15;
+    if(y+d>target){ if(items.length) break; d=15; }
+    items.push({d:d,y:y+d/2,ph:rnd()*6.283,sp:0.5+rnd()*0.9,tone:Math.floor(rnd()*nt)});
+    y+=d+P.gap;
+    if(y>=target) break;
+  }
+  var last=items[items.length-1];
+  return {items:items,len:last.y+last.d/2};
+}
+var M=null;
+function build(){
+  var Wmm=P.w*10,Hmm=P.h*10,pitch=Wmm/P.n,strands=[];
+  for(var L=0;L<P.layers;L++){
+    var rnd=mulberry(P.seed*7919+L*104729+17);
+    var cnt=L===1?Math.max(1,P.n-1):P.n, off=L===0?0.5:(L===1?1:0.25);
+    for(var i=0;i<cnt;i++){
+      var x=(i+off)*pitch, t=x/Wmm;
+      var target=Math.max(60,Hmm*profile(t)*(1-P.jitter/100*rnd()));
+      var s=fillStrand(target,rnd);
+      s.x=x;s.layer=L;s.ph=rnd()*6.283;s.amp=0.006+rnd()*0.008;
+      s.big=0;s.small=0;
+      s.items.forEach(function(it){if(it.d===40)s.big++;else s.small++});
+      strands.push(s);
+    }
+  }
+  strands.forEach(function(s,i){s.no=i+1});
+  var big=0,small=0,thread=0,maxLen=0;
+  strands.forEach(function(s){big+=s.big;small+=s.small;thread+=s.len+250;maxLen=Math.max(maxLen,s.len)});
+  M={strands:strands,big:big,small:small,thread:Math.ceil(thread/500)/2,maxLen:maxLen,Wmm:Wmm,Hmm:Hmm};
+}
+function formula(s){
+  var out=[],cur=null,c=0;
+  function flush(){if(cur!==null)out.push((c>1?c:"")+(cur===40?"Б":"м"))}
+  s.items.forEach(function(it){if(it.d===cur)c++;else{flush();cur=it.d;c=1}});
+  flush();return out.join(" · ");
+}
+
+/* ---------- отрисовка ---------- */
+var sprites=new Map();
+function sprite(tone,idx,d,px){
+  px=Math.max(3,Math.ceil(px));
+  var key=tone+idx+"|"+d+"|"+px, s=sprites.get(key);
+  if(s) return s;
+  if(sprites.size>80) sprites.clear();
+  var c=document.createElement("canvas");c.width=c.height=px+4;
+  var g=c.getContext("2d"),r=px/2,cx=r+2,col=TONES[tone][idx];
+  var rnd=mulberry(d*31+idx*7+px);
+  g.beginPath();g.arc(cx,cx,r,0,6.2832);g.save();g.clip();
+  var gr=g.createRadialGradient(cx-r*0.35,cx-r*0.4,r*0.05,cx,cx,r*1.05);
+  gr.addColorStop(0,"#ffffff");gr.addColorStop(0.45,col[0]);gr.addColorStop(1,col[1]);
+  g.globalAlpha=0.93;g.fillStyle=gr;g.fillRect(0,0,px+4,px+4);
+  if(d===40){ // прожилки перламутра
+    g.globalAlpha=0.35;g.lineWidth=Math.max(0.6,px*0.02);
+    for(var i=0;i<5;i++){
+      g.strokeStyle=i%2?"#ffffff":col[1];
+      g.beginPath();var a=rnd()*6.28;
+      g.arc(cx+Math.cos(a)*r*1.4,cx+Math.sin(a)*r*1.4,r*(0.9+rnd()*1.1),0,6.2832);g.stroke();
+    }
+  }
+  g.restore();
+  g.globalAlpha=0.55;g.strokeStyle=col[1];g.lineWidth=Math.max(0.7,px*0.03);
+  g.beginPath();g.arc(cx,cx,r-g.lineWidth/2,0,6.2832);g.stroke();
+  g.globalAlpha=0.8;g.strokeStyle="#ffffff";g.lineWidth=Math.max(0.6,px*0.035);
+  g.beginPath();g.arc(cx,cx,r*0.78,3.5,4.6);g.stroke();
+  sprites.set(key,c);return c;
+}
+function geom(cw,ch){
+  var sw=M.Wmm+300, sh=M.Hmm+290, sc=Math.min(cw/sw,ch/sh);
+  return {sc:sc,x0:(cw-M.Wmm*sc)/2,y0:(ch-sh*sc)/2+130*sc};
+}
+function drawWall(g,cw,ch,G){
+  var wall=WALLS.find(function(w){return w.id===P.wall})||WALLS[0], sc=G.sc, rnd=mulberry(99);
+  g.fillStyle=wall.c;g.fillRect(0,0,cw,ch);
+  if(wall.id==="concrete"){
+    for(var i=0;i<260;i++){g.fillStyle=rnd()<0.5?"rgba(255,255,255,.05)":"rgba(40,45,50,.05)";
+      g.beginPath();g.ellipse(rnd()*cw,rnd()*ch,20+rnd()*90,10+rnd()*40,rnd()*3,0,6.2832);g.fill()}
+  } else if(wall.id==="brick"){
+    g.fillStyle="#cdbfb3";g.fillRect(0,0,cw,ch);
+    var bw=250*sc,bh=65*sc,j=Math.max(1,10*sc),row=0;
+    for(var y=-bh;y<ch;y+=bh+j,row++){
+      for(var x=-(row%2?bw/2:0)-bw;x<cw;x+=bw+j){
+        var v=rnd();g.fillStyle="hsl("+(10+v*10)+","+(38+v*14)+"%,"+(38+rnd()*12)+"%)";
+        g.fillRect(x,y,bw,bh);
+      }
+    }
+  } else if(wall.id==="wood"){
+    var pw=120*sc;
+    for(var x2=0;x2<cw;x2+=pw){
+      g.fillStyle="hsl("+(26+rnd()*6)+","+(36+rnd()*10)+"%,"+(50+rnd()*10)+"%)";g.fillRect(x2,0,pw,ch);
+      g.fillStyle="rgba(60,35,15,.35)";g.fillRect(x2,0,Math.max(1,1.5*sc),ch);
+      g.strokeStyle="rgba(70,40,15,.10)";g.lineWidth=1;
+      for(var q=0;q<5;q++){var gx=x2+rnd()*pw;g.beginPath();g.moveTo(gx,0);g.bezierCurveTo(gx+8*(rnd()-.5),ch*0.3,gx+8*(rnd()-.5),ch*0.6,gx,ch);g.stroke()}
+    }
+  }
+  var lg=g.createLinearGradient(0,0,cw,ch);
+  lg.addColorStop(0,"rgba(255,255,255,.10)");lg.addColorStop(1,"rgba(0,0,0,.10)");
+  g.fillStyle=lg;g.fillRect(0,0,cw,ch);
+  if(P.light){
+    var r2=mulberry(P.seed+5),R=38*sc;
+    for(var lx=40;lx<M.Wmm;lx+=85){
+      g.strokeStyle=wall.dark?"rgba(255,255,255,.18)":"rgba(90,90,90,.25)";g.lineWidth=Math.max(0.5,sc*1.2);
+      g.beginPath();g.moveTo(G.x0+lx*sc,G.y0);g.lineTo(G.x0+lx*sc,G.y0+M.Hmm*0.95*sc);g.stroke();
+      for(var ly=30+r2()*50;ly<M.Hmm*0.95;ly+=75){
+        var px=G.x0+lx*sc,py=G.y0+ly*sc,rg=g.createRadialGradient(px,py,0,px,py,R);
+        rg.addColorStop(0,"rgba(255,244,214,.95)");rg.addColorStop(0.12,"rgba(255,226,160,.55)");rg.addColorStop(1,"rgba(255,220,150,0)");
+        g.fillStyle=rg;g.fillRect(px-R,py-R,R*2,R*2);
+      }
+    }
+  }
+}
+function drawRod(g,G){
+  var sc=G.sc,x=G.x0-50*sc,w=(M.Wmm+100)*sc,h=Math.max(3,14*sc),y=G.y0-h;
+  g.fillStyle="rgba(0,0,0,.14)";g.fillRect(x+4*sc,y+7*sc,w,h);
+  var gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,"#dcbc8f");gr.addColorStop(1,"#a98155");
+  g.fillStyle=gr;g.beginPath();
+  if(g.roundRect) g.roundRect(x,y,w,h,h/2); else g.rect(x,y,w,h);
+  g.fill();
+}
+function drawDims(g,cw,ch,G,dark){
+  var sc=G.sc,col=dark?"rgba(255,255,255,.85)":"rgba(30,40,48,.8)";
+  g.strokeStyle=col;g.fillStyle=col;g.lineWidth=1;g.font="600 12px system-ui,sans-serif";g.textAlign="center";g.textBaseline="middle";
+  var y=G.y0-60*sc,xa=G.x0,xb=G.x0+M.Wmm*sc;
+  g.beginPath();g.moveTo(xa,y);g.lineTo(xb,y);g.moveTo(xa,y-5);g.lineTo(xa,y+5);g.moveTo(xb,y-5);g.lineTo(xb,y+5);g.stroke();
+  g.fillText(P.w+" см",(xa+xb)/2,y-10);
+  var x=xb+85*sc,ya=G.y0,yb=G.y0+M.maxLen*sc;
+  g.beginPath();g.moveTo(x,ya);g.lineTo(x,yb);g.moveTo(x-5,ya);g.lineTo(x+5,ya);g.moveTo(x-5,yb);g.lineTo(x+5,yb);g.stroke();
+  g.save();g.translate(x+11,(ya+yb)/2);g.rotate(-Math.PI/2);g.fillText(Math.round(M.maxLen/10)+" см",0,0);g.restore();
+}
+function drawShells(g,G,time,dpr){
+  var sc=G.sc,wall=WALLS.find(function(w){return w.id===P.wall})||WALLS[0];
+  for(var L=P.layers-1;L>=0;L--){
+    var list=M.strands.filter(function(s){return s.layer===L});
+    var pos=list.map(function(s){
+      var a=P.sway?s.amp*Math.sin(time*0.9+s.ph):0;
+      return {s:s,sin:Math.sin(a),cos:Math.cos(a),x:G.x0+s.x*sc};
+    });
+    // тени одним контуром
+    g.fillStyle="rgba(0,0,0,"+(wall.dark?0.22:0.12)+")";g.beginPath();
+    var ox=(5+L*3)*sc,oy=(8+L*4)*sc;
+    pos.forEach(function(p){p.s.items.forEach(function(it){
+      var r=it.d/2*sc,x=p.x+p.sin*it.y*sc+ox,y=G.y0+p.cos*it.y*sc+oy;
+      g.moveTo(x+r,y);g.ellipse(x,y,r*0.92,r,0,0,6.2832);
+    })});
+    g.fill();
+    g.strokeStyle=wall.dark?"rgba(255,255,255,.5)":"rgba(80,85,90,.4)";g.lineWidth=Math.max(0.5,0.8*sc);g.beginPath();
+    pos.forEach(function(p){g.moveTo(p.x,G.y0);g.lineTo(p.x+p.sin*p.s.len*sc,G.y0+p.cos*p.s.len*sc)});
+    g.stroke();
+    g.globalAlpha=L===0?1:(L===1?0.9:0.8);
+    pos.forEach(function(p){p.s.items.forEach(function(it){
+      var dp=it.d*sc,r=dp/2,x=p.x+p.sin*it.y*sc,y=G.y0+p.cos*it.y*sc;
+      var tw=0.82+0.18*Math.cos((P.sway?time*it.sp:0)+it.ph);
+      var sp=sprite(P.tone,it.tone,it.d,dp*dpr);
+      g.drawImage(sp,x-r*tw,y-r,dp*tw,dp);
+    })});
+    g.globalAlpha=1;
+  }
+}
+function drawScheme(g,cw,ch){
+  var G=geom(cw,ch),sc=G.sc;
+  g.fillStyle="#ffffff";g.fillRect(0,0,cw,ch);
+  g.strokeStyle="#c9d1d6";g.fillStyle="#5b6b75";g.lineWidth=1;g.font="11px system-ui,sans-serif";g.textAlign="right";g.textBaseline="middle";
+  var rx=G.x0-70*sc;
+  for(var cm=0;cm<=P.h;cm+=10){
+    var y=G.y0+cm*10*sc;
+    g.beginPath();g.moveTo(rx,y);g.lineTo(G.x0+M.Wmm*sc+40*sc,y);g.setLineDash([2,4]);g.stroke();g.setLineDash([]);
+    if(cm%20===0||P.h<=80) g.fillText(cm+" см",rx-4,y);
+  }
+  g.strokeStyle="#1b2a33";g.lineWidth=3;g.beginPath();g.moveTo(G.x0-50*sc,G.y0);g.lineTo(G.x0+(M.Wmm+50)*sc,G.y0);g.stroke();
+  var fs=clamp(M.Wmm/P.n*sc*0.55,8,12);
+  for(var L=P.layers-1;L>=0;L--){
+    var col=LAYER_COLORS[L];
+    M.strands.forEach(function(s){
+      if(s.layer!==L) return;
+      var x=G.x0+s.x*sc;
+      g.strokeStyle=col;g.lineWidth=0.7;g.beginPath();g.moveTo(x,G.y0);g.lineTo(x,G.y0+s.len*sc);g.stroke();
+      s.items.forEach(function(it){
+        g.beginPath();g.arc(x,G.y0+it.y*sc,it.d/2*sc,0,6.2832);
+        g.fillStyle=it.d===40?"rgba(225,232,235,.85)":"#ffffff";g.fill();g.lineWidth=1;g.stroke();
+      });
+      g.fillStyle=col;g.font="600 "+fs+"px system-ui,sans-serif";g.textAlign="center";g.textBaseline="alphabetic";
+      g.fillText(s.no,x,G.y0-6-L*(fs+3));
+    });
+  }
+  g.font="12px system-ui,sans-serif";g.textAlign="left";g.textBaseline="middle";
+  var lx=12,ly=ch-14;
+  for(var i=0;i<P.layers;i++){g.fillStyle=LAYER_COLORS[i];g.fillRect(lx,ly-5,10,10);g.fillText("ряд "+LAYER_NAMES[i],lx+14,ly);lx+=70}
+  g.fillStyle="#5b6b75";g.fillText("ширина "+P.w+" см",lx+6,ly);
+}
+function drawScene(g,cw,ch,time,dpr,wallCache){
+  var G=geom(cw,ch),wall=WALLS.find(function(w){return w.id===P.wall})||WALLS[0];
+  if(wallCache) g.drawImage(wallCache,0,0,cw,ch); else drawWall(g,cw,ch,G);
+  drawRod(g,G);
+  drawShells(g,G,time,dpr);
+  if(P.dims) drawDims(g,cw,ch,G,wall.dark);
+}
+
+var cv=$("cv"),ctx=cv.getContext("2d"),CW=0,CH=0,DPR=1,wallC=null,raf=0;
+function resize(){
+  var r=cv.parentElement.getBoundingClientRect();
+  CW=Math.max(50,r.width);CH=Math.max(50,r.height);DPR=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);wallC=null;
+}
+function ensureWall(){
+  if(wallC) return;
+  wallC=document.createElement("canvas");wallC.width=cv.width;wallC.height=cv.height;
+  var g=wallC.getContext("2d");g.scale(DPR,DPR);drawWall(g,CW,CH,geom(CW,CH));
+}
+/* ---------- 3D ---------- */
+var cv3=$("cv3"),T3=null,T3failed=false;
+function init3d(){
+  if(T3) return true;
+  if(T3failed||!window.THREE) return false;
+  var r;
+  try{r=new THREE.WebGLRenderer({canvas:cv3,antialias:true,preserveDrawingBuffer:true})}catch(e){T3failed=true;return false}
+  r.outputEncoding=THREE.sRGBEncoding;r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;
+  T3={r:r,scene:new THREE.Scene(),cam:new THREE.PerspectiveCamera(40,1,5,8000),group:null,th:0.5,ph:1.5,rad:300,
+      target:new THREE.Vector3(),dirty:true,sizeKey:"",px:"",dummy:new THREE.Object3D(),refs:[]};
+  T3.scene.background=new THREE.Color(0xdfe4e7);
+  var pts=new Map(),pinch=0;
+  cv3.addEventListener("pointerdown",function(e){pts.set(e.pointerId,[e.clientX,e.clientY]);try{cv3.setPointerCapture(e.pointerId)}catch(x){}cv3.style.cursor="grabbing"});
+  cv3.addEventListener("pointermove",function(e){
+    var p=pts.get(e.pointerId);if(!p) return;
+    if(pts.size===1){T3.th=clamp(T3.th-(e.clientX-p[0])*0.008,-1.45,1.45);T3.ph=clamp(T3.ph-(e.clientY-p[1])*0.006,0.5,1.72)}
+    pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pts.size===2){var a=Array.from(pts.values()),d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);
+      if(pinch) T3.rad=clamp(T3.rad*pinch/d,40,1500);pinch=d}
+  });
+  function up(e){pts.delete(e.pointerId);pinch=0;cv3.style.cursor="grab"}
+  cv3.addEventListener("pointerup",up);cv3.addEventListener("pointercancel",up);
+  cv3.addEventListener("wheel",function(e){e.preventDefault();T3.rad=clamp(T3.rad*Math.exp(e.deltaY*0.0012),40,1500)},{passive:false});
+  return true;
+}
+function dispose3d(o){
+  o.traverse(function(n){
+    if(n.geometry) n.geometry.dispose();
+    if(n.material){if(n.material.map) n.material.map.dispose();n.material.dispose()}
+  });
+}
+function build3d(){
+  var T=T3;if(T.group){T.scene.remove(T.group);dispose3d(T.group)}
+  var g=new THREE.Group();T.group=g;T.scene.add(g);
+  var wall=WALLS.find(function(w){return w.id===P.wall})||WALLS[0];
+  var W=P.w,maxL=M.maxLen/10,rodY=Math.max(215,maxL+45),wallW=Math.max(W+420,560),wallH=rodY+55,ppc=3;
+  T.rodY=rodY;T.W=W;
+  // стена
+  var wc=document.createElement("canvas");wc.width=Math.round(wallW*ppc);wc.height=Math.round(wallH*ppc);
+  var keep=P.light;P.light=false;
+  drawWall(wc.getContext("2d"),wc.width,wc.height,{sc:ppc/10,x0:(wallW-W)/2*ppc,y0:(wallH-rodY)*ppc});
+  P.light=keep;
+  var wt=new THREE.CanvasTexture(wc);wt.encoding=THREE.sRGBEncoding;
+  var wm=new THREE.Mesh(new THREE.PlaneGeometry(wallW,wallH),new THREE.MeshLambertMaterial({map:wt}));
+  wm.position.set(0,wallH/2,0);wm.receiveShadow=true;g.add(wm);
+  var fl=new THREE.Mesh(new THREE.PlaneGeometry(wallW,320),new THREE.MeshLambertMaterial({color:0xcbbd9f}));
+  fl.rotation.x=-Math.PI/2;fl.position.set(0,0,160);fl.receiveShadow=true;g.add(fl);
+  var pl=new THREE.Mesh(new THREE.BoxGeometry(wallW,8,1.2),new THREE.MeshLambertMaterial({color:0xf2f0ea}));
+  pl.position.set(0,4,0.6);g.add(pl);
+  // свет
+  g.add(new THREE.HemisphereLight(0xffffff,0x9a8f80,P.light?0.6:0.82));
+  var dl=new THREE.DirectionalLight(0xfff3df,P.light?0.4:0.62);
+  dl.position.set(-W*0.3-40,rodY+70,320);dl.target.position.set(0,rodY-maxL/2,0);
+  dl.castShadow=true;dl.shadow.mapSize.set(2048,2048);dl.shadow.bias=-0.0006;
+  var sc=dl.shadow.camera,ext=Math.max(W,maxL)*0.75+50;
+  sc.left=-ext;sc.right=ext;sc.top=ext;sc.bottom=-ext;sc.near=10;sc.far=1500;
+  g.add(dl);g.add(dl.target);
+  // рейки
+  var wood=new THREE.MeshLambertMaterial({color:0xc49a6c});
+  for(var L=0;L<P.layers;L++){
+    var rod=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,W+10,14),L?wood.clone():wood);
+    rod.rotation.z=Math.PI/2;rod.position.set(0,rodY+0.7,9-L*3);rod.castShadow=true;g.add(rod);
+  }
+  // ракушки
+  T.refs=[];
+  M.strands.forEach(function(s){s.items.forEach(function(it){T.refs.push({s:s,it:it})})});
+  var tex=new THREE.CanvasTexture(sprite("white",0,40,252));tex.encoding=THREE.sRGBEncoding;
+  var mat=new THREE.MeshPhongMaterial({color:0xffffff,map:tex,specular:0xaaaaaa,shininess:70,transparent:true,opacity:0.93,alphaTest:0.3,side:THREE.DoubleSide});
+  var im=new THREE.InstancedMesh(new THREE.CircleGeometry(0.5,28),mat,T.refs.length);
+  im.castShadow=true;im.frustumCulled=false;
+  var col=new THREE.Color();
+  T.refs.forEach(function(r,i){col.set(TONES[P.tone][r.it.tone][0]);im.setColorAt(i,col)});
+  if(im.instanceColor) im.instanceColor.needsUpdate=true;
+  T.im=im;g.add(im);
+  // нити
+  var lg=new THREE.BufferGeometry();T.lpos=new Float32Array(M.strands.length*6);
+  lg.setAttribute("position",new THREE.BufferAttribute(T.lpos,3));
+  T.lines=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:wall.dark?0xffffff:0x6a7076,transparent:true,opacity:0.55}));
+  T.lines.frustumCulled=false;g.add(T.lines);
+  // гирлянда
+  if(P.light){
+    var r2=mulberry(P.seed+5),arr=[];
+    for(var lx=4;lx<W;lx+=8.5) for(var ly=3+r2()*5;ly<maxL*0.95;ly+=7.5) arr.push(lx-W/2,rodY-ly,1.5);
+    var gc=document.createElement("canvas");gc.width=gc.height=64;var gg=gc.getContext("2d");
+    var rg=gg.createRadialGradient(32,32,0,32,32,32);rg.addColorStop(0,"rgba(255,246,220,1)");rg.addColorStop(0.15,"rgba(255,226,160,.7)");rg.addColorStop(1,"rgba(255,220,150,0)");
+    gg.fillStyle=rg;gg.fillRect(0,0,64,64);
+    var pg=new THREE.BufferGeometry();pg.setAttribute("position",new THREE.BufferAttribute(new Float32Array(arr),3));
+    var pm=new THREE.Points(pg,new THREE.PointsMaterial({map:new THREE.CanvasTexture(gc),size:9,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));
+    pm.frustumCulled=false;g.add(pm);
+    var wl=new THREE.PointLight(0xffd08a,0.75,Math.max(W,maxL)*2.2+150);wl.position.set(0,rodY-maxL/2,14);g.add(wl);
+  }
+  T.target.set(0,rodY-maxL/2,6);
+  var key=P.w+"|"+Math.round(maxL/5);
+  if(key!==T.sizeKey){T.sizeKey=key;T.rad=Math.max(W,maxL)*1.3+70}
+  T.dirty=false;
+}
+function render3d(time){
+  if(!init3d()) return false;
+  var T=T3,px=CW+"x"+CH+"x"+DPR;
+  if(px!==T.px){T.px=px;T.r.setPixelRatio(DPR);T.r.setSize(CW,CH,false);T.cam.aspect=CW/CH;T.cam.updateProjectionMatrix()}
+  if(T.dirty) build3d();
+  var d=T.dummy,li=0,lp=T.lpos,cache=new Map();
+  M.strands.forEach(function(s){
+    var a=P.sway?s.amp*Math.sin(time*0.9+s.ph):0,b=P.sway?s.amp*0.9*Math.sin(time*0.7+s.ph*1.7):0;
+    var o={x:s.x/10-T.W/2,z:9-s.layer*3,sa:Math.sin(a),ca:Math.cos(a),sb:Math.sin(b)};cache.set(s,o);
+    var Y=s.len/10;
+    lp[li++]=o.x;lp[li++]=T.rodY;lp[li++]=o.z;lp[li++]=o.x+o.sa*Y;lp[li++]=T.rodY-o.ca*Y;lp[li++]=o.z+o.sb*Y;
+  });
+  T.lines.geometry.attributes.position.needsUpdate=true;
+  for(var i=0;i<T.refs.length;i++){
+    var r=T.refs[i],o=cache.get(r.s),Y=r.it.y/10,dd=r.it.d/10;
+    d.position.set(o.x+o.sa*Y,T.rodY-o.ca*Y,o.z+o.sb*Y);
+    d.rotation.set(0,(r.it.ph/6.283-0.5)*1.1+(P.sway?Math.sin(time*r.it.sp+r.it.ph)*0.75:0),0);
+    d.scale.set(dd,dd,1);d.updateMatrix();T.im.setMatrixAt(i,d.matrix);
+  }
+  T.im.instanceMatrix.needsUpdate=true;
+  var sp=Math.sin(T.ph);
+  T.cam.position.set(T.target.x+T.rad*sp*Math.sin(T.th),Math.max(8,T.target.y+T.rad*Math.cos(T.ph)),T.target.z+T.rad*sp*Math.cos(T.th));
+  T.cam.lookAt(T.target);
+  T.r.render(T.scene,T.cam);
+  return true;
+}
+
+function frame(ts){
+  raf=0;if(!M||!CW) return;
+  if(P.view==="3d"){
+    if(render3d((ts||0)/1000)){raf=requestAnimationFrame(frame);return}
+    P.view="wall";syncUI();toast("3D здесь не запускается — показываю обычный вид.");
+  }
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(P.view==="scheme") drawScheme(ctx,CW,CH);
+  else{ensureWall();drawScene(ctx,CW,CH,(ts||0)/1000,DPR,wallC)}
+  if(P.sway&&P.view==="wall") raf=requestAnimationFrame(frame);
+}
+function kick(){if(!raf) raf=requestAnimationFrame(frame)}
+
+/* ---------- инструкция ---------- */
+function plural(n,a,b,c){var m=n%100,k=n%10;return (m>10&&m<20)?c:(k===1?a:(k>=2&&k<=4?b:c))}
+function shopList(){
+  var rb=Math.ceil(M.big*1.1),rs=Math.ceil(M.small*1.1),a=[];
+  if(M.big) a.push("Ракушки капиз круглые 40 мм — "+M.big+" шт. (с запасом 10 %: "+rb+" шт.)");
+  if(M.small) a.push("Ракушки капиз круглые 15 мм — "+M.small+" шт. (с запасом 10 %: "+rs+" шт.)");
+  a.push("Прозрачная леска 0,25–0,3 мм или белая нить — "+String(M.thread).replace(".",",")+" м (уже с запасом 25 см на каждую нить)");
+  a.push("Рейка, бамбуковая палка или ветка длиной "+(P.w+10)+" см"+(P.layers>1?" — "+P.layers+" шт., по одной на каждый ряд":""));
+  a.push("Обжимные бусины (кримпы) 2 мм или прозрачный клей-гель — для фиксации ракушек на леске");
+  a.push("2 крючка или самореза для рейки, ножницы, линейка, карандаш");
+  return a;
+}
+function stepList(){
+  var gapTxt=P.gap===0?"вплотную, край к краю":"с зазором "+P.gap+" мм между краями";
+  var a=[
+    "Разметьте рейку: отложите от левого края композиции расстояния из столбца «От левого края» и поставьте карандашом метки. Рейка на 5 см длиннее композиции с каждой стороны.",
+    "Нарежьте леску: длина нити из таблицы плюс 25 см на узлы и крепление. Подпишите номер нити на кусочке малярного скотча.",
+    "Собирайте каждую нить сверху вниз по столбцу «Порядок ракушек». Первая ракушка начинается в 1,5 см от рейки, дальше — "+gapTxt+".",
+    "Ракушки с двумя отверстиями связывайте между собой короткими отрезками лески. Ракушки с одним отверстием нанизывайте на общую леску и под каждой ставьте узелок, обжимную бусину или каплю клея, чтобы она не сползала.",
+    "Привяжите готовые нити к рейке по меткам двойным узлом и закрепите узел каплей клея. Проверьте длину по таблице, хвостики срежьте."
+  ];
+  if(P.layers>1) a.push("Ряды "+LAYER_NAMES.slice(1,P.layers).join(" и ")+" повесьте на отдельные рейки на 2–3 см ближе к стене, чем ряд А: нити встанут в шахматном порядке и появится глубина, как на фото.");
+  a.push("Повесьте рейку на два крючка по уровню. Нижний край самой длинной нити окажется на "+Math.round(M.maxLen/10)+" см ниже рейки — проверьте, что он не задевает мебель.");
+  a.push("Капиз хрупкий: отверстия не расширяйте, храните ракушки плашмя, а готовые нити переносите за рейку.");
+  return a;
+}
+function paramLine(){
+  var sh=$("shape").selectedOptions[0].textContent,pt=$("pattern").selectedOptions[0].textContent;
+  return "Ширина "+P.w+" см, самая длинная нить "+Math.round(M.maxLen/10)+" см, нитей "+M.strands.length+" ("+P.layers+" "+plural(P.layers,"ряд","ряда","рядов")+"), форма: "+sh+", чередование: "+pt+", зазор "+P.gap+" мм, вариант № "+P.seed+".";
+}
+function cm(mm){return (Math.round(mm)/10).toFixed(1).replace(".",",")}
+function renderGuide(){
+  $("stats").innerHTML=[
+    [M.big,"ракушек 40 мм"],[M.small,"ракушек 15 мм"],[M.strands.length,plural(M.strands.length,"нить","нити","нитей")],
+    [String(M.thread).replace(".",",")+" м","лески"]
+  ].map(function(s){return "<div class=\"stat\"><b>"+s[0]+"</b><span>"+s[1]+"</span></div>"}).join("");
+  $("shop").innerHTML=shopList().map(function(s){return "<li>"+s+"</li>"}).join("");
+  $("steps").innerHTML=stepList().map(function(s){return "<li>"+s+"</li>"}).join("");
+  $("tbody").innerHTML=tableRows();
+  $("seedOut").textContent=P.seed;
+}
+function tableRows(){
+  return M.strands.map(function(s){
+    return "<tr><td class=\"num\">"+s.no+"</td><td>"+LAYER_NAMES[s.layer]+"</td><td class=\"num\">"+cm(s.x)+" см</td><td class=\"num\">"+cm(s.len)+" см</td><td class=\"num\">"+s.big+" / "+s.small+"</td><td class=\"f\">"+formula(s)+"</td></tr>";
+  }).join("");
+}
+function guideText(){
+  var t=["ПОДВЕСКИ ИЗ РАКУШЕК — ИНСТРУКЦИЯ","",paramLine(),"","ЧТО КУПИТЬ"];
+  shopList().forEach(function(s){t.push("• "+s)});
+  t.push("","ПОРЯДОК СБОРКИ");
+  stepList().forEach(function(s,i){t.push((i+1)+". "+s)});
+  t.push("","СХЕМА НИТЕЙ (сверху вниз; Б — 40 мм, м — 15 мм)");
+  M.strands.forEach(function(s){t.push("№"+s.no+" · ряд "+LAYER_NAMES[s.layer]+" · "+cm(s.x)+" см от левого края · длина "+cm(s.len)+" см · "+formula(s))});
+  return t.join("\n");
+}
+function snapshot(kind,w,h){
+  var c=document.createElement("canvas");c.width=w;c.height=h;var g=c.getContext("2d");
+  if(kind==="scheme") drawScheme(g,w,h); else drawScene(g,w,h,0,1,null);
+  return c;
+}
+function guideHtml(){
+  var a=snapshot("wall",1400,1050).toDataURL("image/jpeg",0.88),b=snapshot("scheme",1600,1200).toDataURL("image/png");
+  return "<!doctype html><html lang=\"ru\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Подвески из ракушек — инструкция</title><style>"+
+  "body{font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#18242c;max-width:900px;margin:24px auto;padding:0 16px}h1{font-size:24px}h2{font-size:17px;margin-top:28px}img{max-width:100%;border:1px solid #ccd;border-radius:6px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccd;padding:4px 8px;text-align:left;vertical-align:top}th{background:#eef1f3}td.f{font-family:Consolas,monospace}li{margin:4px 0}tr{break-inside:avoid}.note{color:#586872}"+
+  "</style></head><body><h1>Подвески из ракушек — инструкция</h1><p>"+paramLine()+"</p><img src=\""+a+"\" alt=\"Предпросмотр на стене\">"+
+  "<h2>Что купить</h2><ul>"+shopList().map(function(s){return "<li>"+s+"</li>"}).join("")+"</ul>"+
+  "<h2>Порядок сборки</h2><ol>"+stepList().map(function(s){return "<li>"+s+"</li>"}).join("")+"</ol>"+
+  "<h2>Схема</h2><p class=\"note\">Номера над рейкой — номера нитей из таблицы. Крупный круг — 40 мм, мелкий — 15 мм.</p><img src=\""+b+"\" alt=\"Схема нитей\">"+
+  "<h2>Нити — собирать сверху вниз</h2><p class=\"note\">Б — ракушка 40 мм, м — ракушка 15 мм. «3м» — три мелкие подряд.</p><table><thead><tr><th>№</th><th>Ряд</th><th>От левого края</th><th>Длина</th><th>Б / м</th><th>Порядок ракушек</th></tr></thead><tbody>"+tableRows()+"</tbody></table></body></html>";
+}
+
+/* ---------- сохранение ---------- */
+var dlP=(window.claude&&window.claude.use)?window.claude.use("downloads").catch(function(){return null}):Promise.resolve(null);
+var toastT=0;
+function toast(msg){var t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3200)}
+function saveFile(name,data,mime){
+  dlP.then(function(dl){
+    if(dl){
+      return dl.save({filename:name,data:data}).then(function(){toast("Файл сохранён: "+name)},function(e){
+        if(e&&e.code==="declined") return;
+        toast(e&&e.code==="rate_limited"?"Окно сохранения уже открыто — ответьте в нём.":"Здесь сохранить файл нельзя. Скопируйте инструкцию текстом.");
+      });
+    }
+    try{
+      var blob=data instanceof Blob?data:new Blob([data],{type:mime});
+      var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
+    }catch(e){toast("Не удалось сохранить файл. Скопируйте инструкцию текстом.")}
+  });
+}
+function saveGuide(){saveFile("rakushki-instrukciya.html",guideHtml(),"text/html")}
+$("saveGuide").onclick=saveGuide;$("saveGuide2").onclick=saveGuide;
+$("savePng").onclick=function(){
+  if(P.view==="3d"&&T3){cv3.toBlob(function(b){if(b) saveFile("rakushki-3d.png",b,"image/png")},"image/png");return}
+  snapshot(P.view==="scheme"?"scheme":"wall",1600,1200).toBlob(function(b){if(b) saveFile(P.view==="scheme"?"rakushki-shema.png":"rakushki-na-stene.png",b,"image/png")},"image/png");
+};
+$("copyText").onclick=function(){
+  var txt=guideText();
+  function fallback(){
+    var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();
+    var ok=false;try{ok=document.execCommand("copy")}catch(e){}
+    ta.remove();toast(ok?"Инструкция скопирована":"Не удалось скопировать — скачайте файл инструкции.");
+  }
+  try{navigator.clipboard.writeText(txt).then(function(){toast("Инструкция скопирована")},fallback)}catch(e){fallback()}
+};
+
+/* ---------- управление ---------- */
+var UNITS={w:" см",h:" см",n:"",layers:"",minlen:" %",jitter:" %",big:" %",gap:" мм"};
+function syncUI(){
+  Object.keys(UNITS).forEach(function(k){
+    $(k).value=P[k];
+    var txt=P[k]+UNITS[k];
+    if(k==="minlen") txt=P.minlen+" % · "+Math.round(P.h*P.minlen/100)+" см";
+    if(k==="jitter") txt=P.jitter===0?"нет":"до "+P.jitter+" %";
+    if(k==="gap") txt=P.gap===0?"вплотную":P.gap+" мм";
+    $("o_"+k).textContent=txt;
+  });
+  ["shape","pattern","tone"].forEach(function(k){$(k).value=P[k]});
+  ["light","sway","dims"].forEach(function(k){$(k).checked=P[k]});
+  Array.prototype.forEach.call($("walls").children,function(b){b.setAttribute("aria-pressed",b.dataset.wall===P.wall)});
+  $("v_wall").setAttribute("aria-pressed",P.view==="wall");$("v_scheme").setAttribute("aria-pressed",P.view==="scheme");
+  $("v_3d").setAttribute("aria-pressed",P.view==="3d");
+  cv.hidden=P.view==="3d";cv3.hidden=P.view!=="3d";$("hint3").hidden=P.view!=="3d";
+}
+function update(rebuild){
+  if(rebuild!==false) build();
+  wallC=null;if(T3) T3.dirty=true;syncUI();renderGuide();kick();
+  try{localStorage.setItem("shellgen",JSON.stringify(P))}catch(e){}
+}
+Object.keys(UNITS).forEach(function(k){$(k).addEventListener("input",function(){P[k]=+this.value;update()})});
+["shape","pattern","tone"].forEach(function(k){$(k).addEventListener("change",function(){P[k]=this.value;update()})});
+["light","sway","dims"].forEach(function(k){$(k).addEventListener("change",function(){P[k]=this.checked;update(false)})});
+WALLS.forEach(function(w){
+  var b=document.createElement("button");b.type="button";b.dataset.wall=w.id;b.title=w.name;b.setAttribute("aria-label","Стена: "+w.name);
+  b.style.background=w.c;
+  if(w.id==="brick") b.style.background="repeating-linear-gradient(0deg,#a65a43 0 8px,#cdbfb3 8px 10px)";
+  if(w.id==="wood") b.style.background="repeating-linear-gradient(90deg,#b78a5d 0 10px,#8d6238 10px 11px)";
+  b.onclick=function(){P.wall=w.id;update(false)};$("walls").appendChild(b);
+});
+$("shuffle").onclick=function(){P.seed=1000+Math.floor(Math.random()*9000);update()};
+Array.prototype.forEach.call(document.querySelectorAll("[data-preset]"),function(b){
+  b.onclick=function(){Object.assign(P,PRESETS[b.dataset.preset]);update()};
+});
+$("v_wall").onclick=function(){P.view="wall";update(false)};
+$("v_scheme").onclick=function(){P.view="scheme";update(false)};
+$("v_3d").onclick=function(){P.view="3d";update(false)};
+if(window.ResizeObserver) new ResizeObserver(function(){resize();kick()}).observe(cv.parentElement);
+else window.addEventListener("resize",function(){resize();kick()});
+resize();update();
+})();
+</script>
+</body>
+</html>
