@@ -77,7 +77,31 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font
 th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 th{position:sticky;top:0;background:var(--chip);font-weight:600;white-space:nowrap}
 td.num{white-space:nowrap}
-td.f{font-family:ui-monospace,Consolas,monospace;font-size:13px;min-width:220px}
+td.f{min-width:240px}
+td.f small{display:block;color:var(--muted);margin-top:4px}
+.guide ol.steps{list-style:none;padding:0;max-width:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px}
+.step{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.step p{margin:4px 0 0}
+.ill{flex:none;width:84px;color:var(--ink)}
+.ill svg{width:100%;height:auto;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ill .sh{fill:var(--chip)}
+.ill .ac{fill:var(--accent);stroke:none}
+.dots{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
+.dots i{display:block;border-radius:50%;border:1.5px solid var(--muted);flex:none;background:var(--panel)}
+.dots i.B{width:16px;height:16px;background:var(--chip)}
+.dots i.m{width:7px;height:7px}
+.dots.big{gap:5px}
+.dots.big i.B{width:34px;height:34px}
+.dots.big i.m{width:13px;height:13px}
+.stepper{border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.stepper ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;max-width:75ch}
+.map{position:relative;height:14px;border-radius:7px;background:var(--chip);margin:6px 3px 0}
+.map i{position:absolute;top:3px;width:2px;height:8px;background:var(--muted);transform:translateX(-1px)}
+.map i.cur{top:-4px;height:22px;width:6px;border-radius:3px;background:var(--accent);transform:translateX(-3px)}
+.strandpic{display:flex;flex-direction:column;gap:6px}
+.btn:disabled{opacity:.45;cursor:default}
+summary{cursor:pointer;font-weight:600}
+details>p{margin:10px 0}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;z-index:20;max-width:90vw}
 .note{color:var(--muted);font-size:13px}
 @media (max-width:860px){
@@ -187,12 +211,24 @@ td.f{font-family:ui-monospace,Consolas,monospace;font-size:13px;min-width:220px}
     </div>
     <h3>Что купить</h3>
     <ol id="shop" style="list-style:disc"></ol>
-    <h3>Порядок сборки</h3>
-    <ol id="steps"></ol>
-    <h3>Схема нитей — собирать сверху вниз</h3>
-    <p class="note">Б — ракушка 40 мм, м — ракушка 15 мм. Запись «3м» значит три мелкие подряд. Номера нитей совпадают с номерами в режиме «Схема».</p>
-    <div class="tablebox"><table><thead><tr><th>№</th><th>Ряд</th><th>От левого края</th><th>Длина</th><th>Б / м</th><th>Порядок ракушек</th></tr></thead><tbody id="tbody"></tbody></table></div>
+    <h3>Как собирать</h3>
+    <ol id="steps" class="steps"></ol>
+    <h3>Собираем по одной нити</h3>
+    <div class="stepper">
+      <div class="bar"><b id="st_title"></b><span class="note" id="st_prog"></span></div>
+      <div class="map" id="st_map" aria-hidden="true"></div>
+      <p class="note">Полоска — это рейка, если смотреть спереди. Яркая метка показывает, где висит эта нить.</p>
+      <div class="strandpic"><div id="st_dots"></div><span class="note">Слева — верх нити, у рейки. Справа — низ.</span></div>
+      <ul id="st_info"></ul>
+      <div class="btns"><button class="btn" id="st_prev">← Назад</button><button class="btn primary" id="st_next">Готово, следующая →</button></div>
+    </div>
+    <details>
+      <summary>Все нити одной таблицей</summary>
+      <p class="note">Большой кружок — ракушка 40 мм, маленький — 15 мм. Читать слева направо: слева верх нити. Номера совпадают с номерами в режиме «Схема».</p>
+      <div class="tablebox"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    </details>
   </section>
+
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -288,6 +324,7 @@ function build(){
     }
   }
   strands.forEach(function(s,i){s.no=i+1});
+  cur=0;done.clear();
   var big=0,small=0,thread=0,maxLen=0;
   strands.forEach(function(s){big+=s.big;small+=s.small;thread+=s.len+250;maxLen=Math.max(maxLen,s.len)});
   M={strands:strands,big:big,small:small,thread:Math.ceil(thread/500)/2,maxLen:maxLen,Wmm:Wmm,Hmm:Hmm};
@@ -607,57 +644,116 @@ function kick(){if(!raf) raf=requestAnimationFrame(frame)}
 
 /* ---------- инструкция ---------- */
 function plural(n,a,b,c){var m=n%100,k=n%10;return (m>10&&m<20)?c:(k===1?a:(k>=2&&k<=4?b:c))}
+function fmt(v){return (Math.round(v*10)/10).toFixed(1).replace(".",",").replace(/,0$/,"")}
+function cm(mm){return fmt(mm/10)}
+var ILL={
+  mark:'<rect x="6" y="12" width="88" height="9" rx="4.5"/><path d="M22 21v9M40 21v9M58 21v9M76 21v9"/><path d="M58 52l14-14 5 5-14 14-7 2z"/>',
+  cut:'<path d="M6 16c12-8 20 8 32 0s20 8 32 0 16 4 24 0"/><circle cx="34" cy="50" r="6"/><circle cx="52" cy="54" r="6"/><path d="M39 46l31-18M57 50l13-22"/>',
+  thread:'<path d="M6 32h88"/><circle class="sh" cx="24" cy="32" r="13"/><circle class="sh" cx="46" cy="32" r="5"/><circle class="sh" cx="60" cy="32" r="5"/><circle class="sh" cx="80" cy="32" r="13"/>',
+  knot:'<path d="M50 4v56"/><circle class="sh" cx="50" cy="26" r="18"/><circle cx="50" cy="13" r="2"/><circle class="ac" cx="50" cy="48" r="4.5"/>',
+  tie:'<rect x="6" y="8" width="88" height="9" rx="4.5"/><path d="M26 17v40M50 17v40M74 17v40"/><circle class="sh" cx="26" cy="38" r="8"/><circle class="sh" cx="50" cy="44" r="8"/><circle class="sh" cx="74" cy="36" r="8"/><circle class="ac" cx="26" cy="19" r="3.5"/><circle class="ac" cx="50" cy="19" r="3.5"/><circle class="ac" cx="74" cy="19" r="3.5"/>',
+  rows:'<rect x="6" y="8" width="80" height="8" rx="4"/><rect x="14" y="20" width="80" height="8" rx="4"/><path d="M22 16v40M46 16v40M70 16v40M34 28v30M58 28v30M82 28v30"/>',
+  hang:'<path d="M4 6h92M22 6v8M78 6v8"/><rect x="10" y="14" width="80" height="8" rx="4"/><path d="M26 22v24M42 22v14M58 22v14M74 22v24"/><circle class="sh" cx="26" cy="52" r="6"/><circle class="sh" cx="42" cy="42" r="6"/><circle class="sh" cx="58" cy="42" r="6"/><circle class="sh" cx="74" cy="52" r="6"/>'
+};
+function ill(k){return '<svg viewBox="0 0 100 64" aria-hidden="true">'+ILL[k]+'</svg>'}
+function runs(s){
+  var out=[];
+  s.items.forEach(function(it){var l=out[out.length-1];if(l&&l.d===it.d)l.c++;else out.push({d:it.d,c:1})});
+  return out;
+}
+function words(s){
+  return runs(s).map(function(r){
+    var big=r.d===40;
+    if(r.c===1) return big?"большая":"маленькая";
+    return r.c+" "+plural(r.c,big?"большая":"маленькая",big?"большие":"маленькие",big?"больших":"маленьких");
+  }).join(", ");
+}
+function dotsHtml(s,cls){
+  return '<span class="dots'+(cls?" "+cls:"")+'">'+s.items.map(function(it){return it.d===40?'<i class="B"></i>':'<i class="m"></i>'}).join("")+'</span>';
+}
 function shopList(){
   var rb=Math.ceil(M.big*1.1),rs=Math.ceil(M.small*1.1),a=[];
-  if(M.big) a.push("Ракушки капиз круглые 40 мм — "+M.big+" шт. (с запасом 10 %: "+rb+" шт.)");
-  if(M.small) a.push("Ракушки капиз круглые 15 мм — "+M.small+" шт. (с запасом 10 %: "+rs+" шт.)");
-  a.push("Прозрачная леска 0,25–0,3 мм или белая нить — "+String(M.thread).replace(".",",")+" м (уже с запасом 25 см на каждую нить)");
-  a.push("Рейка, бамбуковая палка или ветка длиной "+(P.w+10)+" см"+(P.layers>1?" — "+P.layers+" шт., по одной на каждый ряд":""));
-  a.push("Обжимные бусины (кримпы) 2 мм или прозрачный клей-гель — для фиксации ракушек на леске");
-  a.push("2 крючка или самореза для рейки, ножницы, линейка, карандаш");
+  if(M.big) a.push("Большие ракушки, 40 мм — нужно "+M.big+" шт. Купите "+rb+": несколько штук обычно приходят с трещинами.");
+  if(M.small) a.push("Маленькие ракушки, 15 мм — нужно "+M.small+" шт. Купите "+rs+".");
+  a.push("В магазинах они называются «ракушки капиз круглые с отверстием».");
+  a.push("Прозрачная леска 0,25–0,3 мм — "+fmt(M.thread)+" м. Подойдёт и крепкая белая нитка.");
+  a.push("Рейка длиной "+(P.w+10)+" см: деревянная планка, бамбуковая палочка или красивая ветка"+(P.layers>1?". Нужно "+P.layers+" шт. — по одной на каждый ряд":"")+".");
+  a.push("Прозрачный клей-гель — капелька под каждую ракушку, чтобы она не съезжала.");
+  a.push("Ещё пригодятся: 2 крючка или гвоздика, ножницы, линейка, карандаш, малярный скотч.");
   return a;
 }
 function stepList(){
-  var gapTxt=P.gap===0?"вплотную, край к краю":"с зазором "+P.gap+" мм между краями";
-  var a=[
-    "Разметьте рейку: отложите от левого края композиции расстояния из столбца «От левого края» и поставьте карандашом метки. Рейка на 5 см длиннее композиции с каждой стороны.",
-    "Нарежьте леску: длина нити из таблицы плюс 25 см на узлы и крепление. Подпишите номер нити на кусочке малярного скотча.",
-    "Собирайте каждую нить сверху вниз по столбцу «Порядок ракушек». Первая ракушка начинается в 1,5 см от рейки, дальше — "+gapTxt+".",
-    "Ракушки с двумя отверстиями связывайте между собой короткими отрезками лески. Ракушки с одним отверстием нанизывайте на общую леску и под каждой ставьте узелок, обжимную бусину или каплю клея, чтобы она не сползала.",
-    "Привяжите готовые нити к рейке по меткам двойным узлом и закрепите узел каплей клея. Проверьте длину по таблице, хвостики срежьте."
-  ];
-  if(P.layers>1) a.push("Ряды "+LAYER_NAMES.slice(1,P.layers).join(" и ")+" повесьте на отдельные рейки на 2–3 см ближе к стене, чем ряд А: нити встанут в шахматном порядке и появится глубина, как на фото.");
-  a.push("Повесьте рейку на два крючка по уровню. Нижний край самой длинной нити окажется на "+Math.round(M.maxLen/10)+" см ниже рейки — проверьте, что он не задевает мебель.");
-  a.push("Капиз хрупкий: отверстия не расширяйте, храните ракушки плашмя, а готовые нити переносите за рейку.");
+  var pitch=P.w/P.n,a=[];
+  var marks="Отступите 5 см от левого конца рейки и поставьте карандашом первую точку — это «ноль». Дальше ставьте точки: первая в "+fmt(pitch/2)+" см от нуля, потом каждые "+fmt(pitch)+" см. Получится "+P.n+" "+plural(P.n,"точка","точки","точек")+".";
+  a.push({i:"mark",t:"Разметьте рейку",d:marks});
+  a.push({i:"cut",t:"Нарежьте леску",d:"Для каждой нити отрежьте кусок на 25 см длиннее самой нити — запас уйдёт на узлы. Точная длина написана в карточке нити. На конец наклейте кусочек скотча с номером, чтобы не перепутать."});
+  a.push({i:"thread",t:"Нанизывайте сверху вниз",d:"В карточке нити кружки нарисованы в том порядке, в каком идут ракушки: большой кружок — большая ракушка, маленький — маленькая. Первую ракушку ставьте в 1,5 см от верха, следующие — "+(P.gap===0?"вплотную друг к другу":"через "+P.gap+" мм друг от друга")+"."});
+  a.push({i:"knot",t:"Закрепите каждую ракушку",d:"Проденьте леску в дырочку и сразу под ракушкой завяжите узелок или капните клея — так она останется на месте. Если дырочек две, проведите леску через обе."});
+  a.push({i:"tie",t:"Привяжите нити к рейке",d:"Каждую нить привяжите двойным узлом на свою точку и капните на узел клея. Номер нити и её место смотрите в карточке. Лишние хвостики срежьте."});
+  if(P.layers>1){
+    var extra="Ряд Б собирается так же, только точки на его рейке сдвинуты: первая в "+fmt(pitch)+" см от нуля, потом каждые "+fmt(pitch)+" см.";
+    if(P.layers>2) extra+=" У ряда В первая точка в "+fmt(pitch/4)+" см от нуля, шаг тот же.";
+    a.push({i:"rows",t:"Соберите остальные ряды",d:extra+" Эти рейки вешаются за первой, на 2–3 см ближе к стене, — нити встают в шахматном порядке, и гирлянда выглядит густой."});
+  }
+  a.push({i:"hang",t:"Повесьте на стену",d:"Вбейте два крючка на одной высоте и положите на них рейку. Самая длинная нить свисает на "+Math.round(M.maxLen/10)+" см — проверьте, что внизу ей ничего не мешает. Ракушки хрупкие: переносите гирлянду только за рейку."});
   return a;
 }
 function paramLine(){
-  var sh=$("shape").selectedOptions[0].textContent,pt=$("pattern").selectedOptions[0].textContent;
-  return "Ширина "+P.w+" см, самая длинная нить "+Math.round(M.maxLen/10)+" см, нитей "+M.strands.length+" ("+P.layers+" "+plural(P.layers,"ряд","ряда","рядов")+"), форма: "+sh+", чередование: "+pt+", зазор "+P.gap+" мм, вариант № "+P.seed+".";
+  var sh=$("shape").selectedOptions[0].textContent;
+  return "Ширина "+P.w+" см, самая длинная нить "+Math.round(M.maxLen/10)+" см, всего "+M.strands.length+" "+plural(M.strands.length,"нить","нити","нитей")+(P.layers>1?" в "+P.layers+" ряда":"")+", форма: "+sh.toLowerCase()+". Вариант № "+P.seed+".";
 }
-function cm(mm){return (Math.round(mm)/10).toFixed(1).replace(".",",")}
+var TH="<tr><th>№</th><th>Ряд</th><th>Где висит</th><th>Длина нити</th><th>Отрезать лески</th><th>Ракушки сверху вниз</th></tr>";
+function tableRows(){
+  return M.strands.map(function(s){
+    return "<tr><td class=\"num\">"+s.no+"</td><td>"+LAYER_NAMES[s.layer]+"</td><td class=\"num\">"+cm(s.x)+" см от нуля</td><td class=\"num\">"+cm(s.len)+" см</td><td class=\"num\">"+cm(s.len+250)+" см</td><td class=\"f\">"+dotsHtml(s)+"<small>"+words(s)+"</small></td></tr>";
+  }).join("");
+}
+var cur=0,done=new Set();
+function renderStepper(){
+  var N=M.strands.length;cur=clamp(cur,0,N-1);var s=M.strands[cur];
+  $("st_title").textContent="Нить "+s.no+" из "+N+(P.layers>1?" · ряд "+LAYER_NAMES[s.layer]:"")+(done.has(s.no)?" · собрана":"");
+  $("st_prog").textContent="Собрано "+done.size+" из "+N;
+  $("st_map").innerHTML=M.strands.filter(function(o){return o.layer===s.layer}).map(function(o){
+    return '<i'+(o===s?' class="cur"':'')+' style="left:'+(o.x/M.Wmm*100).toFixed(2)+'%"></i>';
+  }).join("");
+  $("st_dots").innerHTML=dotsHtml(s,"big");
+  var cnt=[];if(s.big)cnt.push(s.big+" "+plural(s.big,"большая","большие","больших"));if(s.small)cnt.push(s.small+" "+plural(s.small,"маленькая","маленькие","маленьких"));
+  $("st_info").innerHTML=[
+    "Где висит: точка в "+cm(s.x)+" см от нуля"+(P.layers>1?", рейка ряда "+LAYER_NAMES[s.layer]:""),
+    "Длина готовой нити: "+cm(s.len)+" см. Леску отрежьте с запасом — "+cm(s.len+250)+" см",
+    "Ракушек: "+cnt.join(" и "),
+    "По порядку сверху вниз: "+words(s)
+  ].map(function(t){return "<li>"+t+"</li>"}).join("");
+  $("st_prev").disabled=cur===0;
+  $("st_next").textContent=cur===N-1?"Готово, это последняя":"Готово, следующая →";
+}
+$("st_prev").onclick=function(){cur--;renderStepper()};
+$("st_next").onclick=function(){
+  var N=M.strands.length;done.add(M.strands[cur].no);
+  if(cur<N-1) cur++; else if(done.size>=N) toast("Все нити собраны — можно вешать!");
+  renderStepper();
+};
+function stepsHtml(){
+  return stepList().map(function(s,i){return "<li class=\"step\"><div class=\"ill\">"+ill(s.i)+"</div><div><b>"+(i+1)+". "+s.t+"</b><p>"+s.d+"</p></div></li>"}).join("");
+}
 function renderGuide(){
   $("stats").innerHTML=[
     [M.big,"ракушек 40 мм"],[M.small,"ракушек 15 мм"],[M.strands.length,plural(M.strands.length,"нить","нити","нитей")],
-    [String(M.thread).replace(".",",")+" м","лески"]
+    [fmt(M.thread)+" м","лески"]
   ].map(function(s){return "<div class=\"stat\"><b>"+s[0]+"</b><span>"+s[1]+"</span></div>"}).join("");
   $("shop").innerHTML=shopList().map(function(s){return "<li>"+s+"</li>"}).join("");
-  $("steps").innerHTML=stepList().map(function(s){return "<li>"+s+"</li>"}).join("");
-  $("tbody").innerHTML=tableRows();
+  $("steps").innerHTML=stepsHtml();
+  $("thead").innerHTML=TH;$("tbody").innerHTML=tableRows();
   $("seedOut").textContent=P.seed;
-}
-function tableRows(){
-  return M.strands.map(function(s){
-    return "<tr><td class=\"num\">"+s.no+"</td><td>"+LAYER_NAMES[s.layer]+"</td><td class=\"num\">"+cm(s.x)+" см</td><td class=\"num\">"+cm(s.len)+" см</td><td class=\"num\">"+s.big+" / "+s.small+"</td><td class=\"f\">"+formula(s)+"</td></tr>";
-  }).join("");
+  renderStepper();
 }
 function guideText(){
-  var t=["ПОДВЕСКИ ИЗ РАКУШЕК — ИНСТРУКЦИЯ","",paramLine(),"","ЧТО КУПИТЬ"];
+  var t=["ПОДВЕСКИ ИЗ РАКУШЕК — КАК СОБРАТЬ","",paramLine(),"","ЧТО КУПИТЬ"];
   shopList().forEach(function(s){t.push("• "+s)});
-  t.push("","ПОРЯДОК СБОРКИ");
-  stepList().forEach(function(s,i){t.push((i+1)+". "+s)});
-  t.push("","СХЕМА НИТЕЙ (сверху вниз; Б — 40 мм, м — 15 мм)");
-  M.strands.forEach(function(s){t.push("№"+s.no+" · ряд "+LAYER_NAMES[s.layer]+" · "+cm(s.x)+" см от левого края · длина "+cm(s.len)+" см · "+formula(s))});
+  t.push("","КАК СОБИРАТЬ");
+  stepList().forEach(function(s,i){t.push((i+1)+". "+s.t+". "+s.d)});
+  t.push("","НИТИ ПО ОДНОЙ (ракушки перечислены сверху вниз)");
+  M.strands.forEach(function(s){t.push("Нить "+s.no+(P.layers>1?", ряд "+LAYER_NAMES[s.layer]:"")+": точка в "+cm(s.x)+" см от нуля, длина "+cm(s.len)+" см, лески отрезать "+cm(s.len+250)+" см. Ракушки: "+words(s)+".")});
   return t.join("\n");
 }
 function snapshot(kind,w,h){
@@ -667,15 +763,16 @@ function snapshot(kind,w,h){
 }
 function guideHtml(){
   var a=snapshot("wall",1400,1050).toDataURL("image/jpeg",0.88),b=snapshot("scheme",1600,1200).toDataURL("image/png");
-  return "<!doctype html><html lang=\"ru\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Подвески из ракушек — инструкция</title><style>"+
-  "body{font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#18242c;max-width:900px;margin:24px auto;padding:0 16px}h1{font-size:24px}h2{font-size:17px;margin-top:28px}img{max-width:100%;border:1px solid #ccd;border-radius:6px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #ccd;padding:4px 8px;text-align:left;vertical-align:top}th{background:#eef1f3}td.f{font-family:Consolas,monospace}li{margin:4px 0}tr{break-inside:avoid}.note{color:#586872}"+
-  "</style></head><body><h1>Подвески из ракушек — инструкция</h1><p>"+paramLine()+"</p><img src=\""+a+"\" alt=\"Предпросмотр на стене\">"+
+  return "<!doctype html><html lang=\"ru\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Подвески из ракушек — как собрать</title><style>"+
+  "body{font:16px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#18242c;max-width:900px;margin:24px auto;padding:0 16px;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1{font-size:26px}h2{font-size:19px;margin-top:30px}img{max-width:100%;border:1px solid #ccd;border-radius:6px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #ccd;padding:6px 8px;text-align:left;vertical-align:top}th{background:#eef1f3}li{margin:5px 0}tr{break-inside:avoid}.note{color:#586872}small{display:block;color:#586872;margin-top:4px}"+
+  ".steps{list-style:none;padding:0}.step{display:flex;gap:16px;align-items:flex-start;margin:14px 0;break-inside:avoid}.step p{margin:4px 0 0}.ill{flex:none;width:110px}.ill svg{width:100%;display:block;fill:none;stroke:#18242c;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ill .sh{fill:#e2e8eb}.ill .ac{fill:#0d6b74;stroke:none}"+
+  ".dots{display:flex;flex-wrap:wrap;align-items:center;gap:3px}.dots i{display:block;border-radius:50%;border:1.5px solid #586872;flex:none}.dots i.B{width:16px;height:16px;background:#e2e8eb}.dots i.m{width:7px;height:7px}"+
+  "</style></head><body><h1>Подвески из ракушек — как собрать</h1><p>Вот что должно получиться. "+paramLine()+"</p><img src=\""+a+"\" alt=\"Готовая гирлянда на стене\">"+
   "<h2>Что купить</h2><ul>"+shopList().map(function(s){return "<li>"+s+"</li>"}).join("")+"</ul>"+
-  "<h2>Порядок сборки</h2><ol>"+stepList().map(function(s){return "<li>"+s+"</li>"}).join("")+"</ol>"+
-  "<h2>Схема</h2><p class=\"note\">Номера над рейкой — номера нитей из таблицы. Крупный круг — 40 мм, мелкий — 15 мм.</p><img src=\""+b+"\" alt=\"Схема нитей\">"+
-  "<h2>Нити — собирать сверху вниз</h2><p class=\"note\">Б — ракушка 40 мм, м — ракушка 15 мм. «3м» — три мелкие подряд.</p><table><thead><tr><th>№</th><th>Ряд</th><th>От левого края</th><th>Длина</th><th>Б / м</th><th>Порядок ракушек</th></tr></thead><tbody>"+tableRows()+"</tbody></table></body></html>";
+  "<h2>Как собирать</h2><ol class=\"steps\">"+stepsHtml()+"</ol>"+
+  "<h2>Общая схема</h2><p class=\"note\">Вид спереди. Числа над рейкой — номера нитей. Большой круг — ракушка 40 мм, маленький — 15 мм.</p><img src=\""+b+"\" alt=\"Схема нитей\">"+
+  "<h2>Карточки нитей</h2><p class=\"note\">Одна строка — одна нить. Кружки нарисованы в том порядке, в каком ракушки идут сверху вниз: слева верх нити. «От нуля» — от первой отметки на рейке, в 5 см от её левого конца. Собрали нить — вычеркните строку.</p><table><thead>"+TH+"</thead><tbody>"+tableRows()+"</tbody></table></body></html>";
 }
-
 /* ---------- сохранение ---------- */
 var dlP=(window.claude&&window.claude.use)?window.claude.use("downloads").catch(function(){return null}):Promise.resolve(null);
 var toastT=0;
