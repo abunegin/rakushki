@@ -113,6 +113,8 @@ details>p{margin:10px 0}
 .ruler-scroll{overflow-x:auto;padding:8px 0 14px}.ruler{position:relative;height:90px;border-top:8px solid var(--chip);margin:28px 30px 0}.ruler span{position:absolute;top:8px;transform:translateX(-50%);text-align:center;font-size:12px;white-space:nowrap}.ruler span:before{content:"";position:absolute;top:-16px;left:50%;height:14px;border-left:2px solid var(--accent)}.ruler small{display:block}.ruler-block{min-width:0;margin-top:12px}.ruler-block p{max-width:none}
 .assembly{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0}.assembly li{position:relative;padding:0 0 12px 0}.assembly li:before{content:"";position:absolute;left:27px;top:0;bottom:0;width:2px;background:var(--line)}.assembly button{position:relative;display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px;font:inherit;min-height:64px;cursor:pointer}.assembly button[aria-pressed=true]{background:var(--chip)}.shell-disc{display:block;flex:none;border:2px solid var(--accent);border-radius:50%;width:40px;height:40px;background:var(--chip)}.shell-disc.small{width:15px;height:15px;margin:12.5px}.assembly small{display:block;color:var(--muted)}
 @media(max-width:600px){.guide{padding:12px}.ill{width:58px}.step{gap:8px;padding:10px}.row .top{flex-wrap:wrap}.stepper{padding:10px}.stepper>.btns .btn{min-height:44px;flex:1 1 140px}.btn{min-height:40px}}
+.palette{display:flex;gap:8px}.palette i{width:34px;height:34px;border:1px solid var(--line);border-radius:50%}
+.paper-icon{background:linear-gradient(130deg,var(--paper-a,#f6eee3),var(--paper-b,#d5c2cc),var(--paper-c,#c6d9d1))!important}.star-icon{clip-path:polygon(50% 0%,61% 35%,98% 38%,68% 60%,79% 96%,50% 75%,21% 96%,32% 60%,2% 38%,39% 35%);border:0!important;border-radius:0!important}.dots i.paper{width:18px;height:18px;border-color:#857886}.shell-disc.paper{border-color:#a38e9c}.kind-note{font-weight:400;color:var(--muted)}
 </style>
 
 <div class="wrap">
@@ -128,7 +130,7 @@ details>p{margin:10px 0}
         <div class="btns">
           <button class="btn" data-preset="photo">Как на фото</button>
           <button class="btn" data-preset="air">Воздушная</button>
-          <button class="btn" data-preset="drop">Каскад</button>
+          <button class="btn" data-preset="drop">Каскад</button><button class="btn" data-preset="pearlPaper">Перламутр + хамелеон</button>
         </div>
         <div class="btns">
           <button class="btn primary" id="shuffle">Перемешать</button>
@@ -144,7 +146,7 @@ details>p{margin:10px 0}
 
       <div class="group">
         <h2>Нити</h2>
-        <div class="row"><div class="top"><label for="n">Нитей в ряду</label><output id="o_n"></output></div><input type="range" id="n" min="4" max="40" step="1"></div>
+        <div class="row"><div class="top"><label for="n">Всего нитей в ряду</label><output id="o_n"></output></div><input type="range" id="n" min="4" max="40" step="1"></div>
         <div class="row"><div class="top"><label for="layers">Рядов в глубину</label><output id="o_layers"></output></div><input type="range" id="layers" min="1" max="3" step="1"></div>
         <div class="row"><label for="shape">Форма нижнего края</label>
           <select id="shape">
@@ -179,6 +181,20 @@ details>p{margin:10px 0}
           </select></div>
       </div>
 
+      <div class="group">
+        <h2>Бумага хамелеон</h2>
+        <div class="row"><label for="paperMode">Как добавить бумагу</label><select id="paperMode"><option value="off">Только ракушки</option><option value="separate">Отдельные бумажные нити</option><option value="mixed">Бумага и ракушки на одной нити</option></select></div>
+        <div id="paperOptions" hidden style="display:flex;flex-direction:column;gap:12px">
+          <p class="note" id="paperModeNote"></p>
+          <div class="row"><div class="top"><label for="paperPercent" id="paperPercentLabel">Бумажных нитей</label><output id="o_paperPercent"></output></div><input type="range" id="paperPercent" min="10" max="70" step="5"></div>
+          <div class="row"><label for="paperShapes">Фигуры</label><select id="paperShapes"><option value="both">Круги и звёздочки</option><option value="circles">Только круги</option><option value="stars">Только звёздочки</option></select></div>
+          <div class="row"><div class="top"><label for="paperSize">Размер бумажных фигур</label><output id="o_paperSize"></output></div><input type="range" id="paperSize" min="20" max="60" step="5"></div>
+          <div class="row"><div class="top"><label for="paperGap">Воздух вокруг бумаги</label><output id="o_paperGap"></output></div><input type="range" id="paperGap" min="20" max="140" step="5"></div>
+          <div class="row"><label for="paperPalette">Переливы бумаги</label><select id="paperPalette"><option value="auto">Подобрать к ракушкам</option><option value="silver">Жемчуг и серебро</option><option value="champagne">Перламутр и шампань</option><option value="rose">Пудровый розовый и жемчуг</option><option value="sage">Шалфей и жемчуг</option></select></div>
+          <button class="btn" id="saveTemplates">Скачать шаблоны фигур (SVG)</button><div class="palette" id="paperSwatches"></div><p class="note" id="paletteNote"></p>
+          <p class="note">Размер — диаметр круга или высота звезды. Оттенки на экране приблизительные: настоящая бумага меняет цвет от света и угла.</p>
+        </div>
+      </div>
       <div class="group">
         <h2>Стена и сцена</h2>
         <div class="walls" id="walls"></div>
@@ -231,7 +247,7 @@ details>p{margin:10px 0}
     </div>
     <details>
       <summary>Все нити одной таблицей</summary>
-      <p class="note">Большой кружок — ракушка 40 мм, маленький — 15 мм. Читать слева направо: слева верх нити. Номера совпадают с номерами в режиме «Схема».</p>
+      <p class="note">Большой кружок — ракушка 40 мм, маленький — 15 мм. Читать слева направо: слева верх нити. Цветной кружок или звезда — бумага хамелеон. Номера совпадают с номерами в режиме «Схема».</p>
       <div class="tablebox"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
     </details>
   </section>
@@ -244,8 +260,9 @@ details>p{margin:10px 0}
 (function(){
 "use strict";
 var TOP = 15; // мм от рейки до первой ракушки
-var DEF = {w:90,h:100,n:16,layers:2,shape:"arch",minlen:45,jitter:15,big:55,pattern:"mix",gap:6,tone:"white",wall:"peach",light:false,sway:true,dims:true,seed:1207,view:"wall"};
+var DEF = {w:90,h:100,n:16,layers:2,shape:"arch",minlen:45,jitter:15,big:55,pattern:"mix",gap:6,tone:"white",wall:"peach",light:false,sway:true,dims:true,seed:1207,view:"wall",paperMode:"off",paperPercent:30,paperSize:35,paperGap:60,paperShapes:"both",paperPalette:"auto"};
 var PRESETS = {
+  pearlPaper:{n:16,layers:2,shape:"arch",minlen:45,jitter:15,big:55,pattern:"mix",gap:6,tone:"white",paperMode:"separate",paperPercent:30,paperSize:35,paperGap:60,paperShapes:"both",paperPalette:"auto"},
   photo:{n:22,layers:3,shape:"arch",minlen:40,jitter:28,big:60,pattern:"mix",gap:4,tone:"white"},
   air:{n:12,layers:1,shape:"wave",minlen:50,jitter:12,big:35,pattern:"rhythm",gap:18,tone:"white"},
   drop:{n:18,layers:2,shape:"drop",minlen:30,jitter:8,big:50,pattern:"bigtop",gap:5,tone:"cream"}
@@ -266,13 +283,19 @@ var TONES = {
   pink:[["#f8e3e3","#dab6bd"]],
   mixed:[["#fbfaf6","#d6dbd8"],["#f8eed9","#dac8a2"],["#ecd7a2","#c4a258"]]
 };
+var PAPER_PALETTES={silver:{name:"Жемчуг и серебро",c:["#f2eee7","#cbd5db","#e3cfdc","#cfdfd8"]},champagne:{name:"Перламутр и шампань",c:["#f7edda","#dfc798","#e9d6ce","#dce2cd"]},rose:{name:"Пудровый розовый и жемчуг",c:["#f8e8e6","#d8afc4","#e4dbe5","#d6e1d9"]},sage:{name:"Шалфей и жемчуг",c:["#f1efdf","#baccba","#ddd1d6","#d6dfdf"]}};
+function paperPalette(){var key=P.paperPalette;if(key==="auto")key={white:"silver",cream:"champagne",pink:"rose",mixed:"champagne"}[P.tone];return PAPER_PALETTES[key]}
+function isPaper(it){return it.kind==="paper"}
+function itemName(it){return isPaper(it)?"Бумажн"+(it.shape==="star"?"ая звезда":"ый круг")+" хамелеон · "+it.d+" мм":(it.d===40?"Большая":"Маленькая")+" ракушка · "+it.d+" мм"}
+function strandKind(s){return s.paperCount===s.items.length?"бумажная":s.paperCount?"смешанная":"ракушки"}
+function maxDiameter(){var d=0;M.strands.forEach(function(s){s.items.forEach(function(it){d=Math.max(d,it.d)})});return d}
 var LAYER_NAMES = ["А","Б","В"];
 var LAYER_COLORS = ["#1b2a33","#0d6b74","#a2542f"];
 
 var P = Object.assign({}, DEF);
 try{ var saved = JSON.parse(localStorage.getItem("shellgen")||"null"); if(saved) for(var k in DEF) if(typeof saved[k]===typeof DEF[k]) P[k]=saved[k]; }catch(e){}
-var LIMITS={w:[40,200,5],h:[30,200,5],n:[4,40,1],layers:[1,3,1],minlen:[15,100,5],jitter:[0,40,1],big:[0,100,5],gap:[0,40,1],seed:[0,999999999,1]};
-var ENUMS={shape:["arch","drop","left","right","wave","flat"],pattern:["mix","rhythm","bigtop","bigbottom"],tone:Object.keys(TONES),wall:WALLS.map(function(w){return w.id}),view:["wall","scheme","3d"]};
+var LIMITS={paperPercent:[10,70,5],paperSize:[20,60,5],paperGap:[20,140,5],w:[40,200,5],h:[30,200,5],n:[4,40,1],layers:[1,3,1],minlen:[15,100,5],jitter:[0,40,1],big:[0,100,5],gap:[0,40,1],seed:[0,999999999,1]};
+var ENUMS={paperMode:["off","separate","mixed"],paperShapes:["both","circles","stars"],paperPalette:["auto","silver","champagne","rose","sage"],shape:["arch","drop","left","right","wave","flat"],pattern:["mix","rhythm","bigtop","bigbottom"],tone:Object.keys(TONES),wall:WALLS.map(function(w){return w.id}),view:["wall","scheme","3d"]};
 function validParams(input){var out=Object.assign({},DEF);Object.keys(DEF).forEach(function(k){var v=input&&input[k];if(LIMITS[k]){var l=LIMITS[k];if(typeof v==="number"&&Number.isFinite(v))out[k]=clamp(Math.round(v/l[2])*l[2],l[0],l[1])}else if(ENUMS[k]){if(ENUMS[k].indexOf(v)!==-1)out[k]=v}else if(typeof v==="boolean")out[k]=v});return out}
 P=validParams(P);
 function sharedParams(){try{var q=new URLSearchParams(location.hash.slice(1));if(q.get("v")!=="1")return null;var a={};Object.keys(DEF).forEach(function(k){if(!q.has(k))return;var v=q.get(k);a[k]=typeof DEF[k]==="number"?Number(v):typeof DEF[k]==="boolean"?v==="true":v});return validParams(a)}catch(e){return null}}
@@ -296,7 +319,8 @@ function profile(t){
   }
   return m+(1-m)*f;
 }
-function fillStrand(target,rnd){
+function fillStrand(target,rnd,kind,decor){
+  if(kind==="paper"||kind==="mixed")target=Math.max(target,TOP+P.paperSize);
   var p=P.big/100, items=[], y=TOP, cycle=null, ci=0;
   if(P.pattern==="rhythm"){
     if(p<=0) cycle=[15]; else if(p>=1) cycle=[40];
@@ -304,7 +328,7 @@ function fillStrand(target,rnd){
     else {cycle=[];var m=clamp(Math.round(p/(1-p)),1,8);while(m--)cycle.push(40);cycle.push(15)}
     ci=Math.floor(rnd()*cycle.length);
   }
-  var nt=TONES[P.tone].length;
+  var nt=TONES[P.tone].length,previousPaper=false;
   for(var guard=0;guard<400;guard++){
     var d, fr=clamp((y-TOP)/Math.max(1,target-TOP),0,1);
     if(cycle){d=cycle[ci%cycle.length];ci++}
@@ -312,9 +336,12 @@ function fillStrand(target,rnd){
     else if(P.pattern==="bigbottom") d=rnd()<clamp(p+(fr-0.5)*1.3,0,1)&&p>0?40:15;
     else d=rnd()<p?40:15;
     if(p>=1) d=40; if(p<=0) d=15;
-    if(y+d>target){ if(items.length) break; d=15; }
-    items.push({d:d,y:y+d/2,ph:rnd()*6.283,sp:0.5+rnd()*0.9,tone:Math.floor(rnd()*nt)});
-    y+=d+P.gap;
+    var paper=kind==="paper"||(kind==="mixed"&&decor()<P.paperPercent/100),shape="circle";
+    if(paper){d=P.paperSize;shape=P.paperShapes==="stars"?"star":P.paperShapes==="circles"?"circle":(decor()<0.5?"star":"circle")}
+    if(items.length)y+=Math.max(P.gap,(paper||previousPaper)?P.paperGap:P.gap)-P.gap;
+    if(y+d>target){ if(items.length) break; d=paper?Math.min(d,target-TOP):15; }
+    items.push({d:d,y:y+d/2,ph:rnd()*6.283,sp:0.5+rnd()*0.9,tone:Math.floor(rnd()*nt),kind:paper?"paper":"shell",shape:shape});
+    previousPaper=paper;y+=d+P.gap;
     if(y>=target) break;
   }
   var last=items[items.length-1];
@@ -329,18 +356,21 @@ function build(){
     for(var i=0;i<cnt;i++){
       var x=(i+off)*pitch, t=x/Wmm;
       var target=Math.max(60,Hmm*profile(t)*(1-P.jitter/100*rnd()));
-      var s=fillStrand(target,rnd);
+      var countPaper=P.paperMode==="separate"?Math.max(1,Math.round(cnt*P.paperPercent/100)):0;
+      var paperSlot=countPaper>0&&Math.floor((i+1)*countPaper/cnt)>Math.floor(i*countPaper/cnt);
+      var kind=P.paperMode==="mixed"?"mixed":paperSlot?"paper":"shell";
+      var s=fillStrand(target,rnd,kind,mulberry(P.seed*31+L*65537+i*199+71));
       s.x=x;s.layer=L;s.ph=rnd()*6.283;s.amp=0.006+rnd()*0.008;
-      s.big=0;s.small=0;
-      s.items.forEach(function(it){if(it.d===40)s.big++;else s.small++});
+      s.big=0;s.small=0;s.paperCount=0;s.stars=0;s.circles=0;
+      s.items.forEach(function(it){if(isPaper(it)){s.paperCount++;if(it.shape==="star")s.stars++;else s.circles++}else if(it.d===40)s.big++;else s.small++});
       strands.push(s);
     }
   }
   strands.forEach(function(s,i){s.no=i+1});
   restoreProgress();
-  var big=0,small=0,thread=0,maxLen=0;
-  strands.forEach(function(s){big+=s.big;small+=s.small;thread+=s.len+250;maxLen=Math.max(maxLen,s.len)});
-  M={strands:strands,big:big,small:small,thread:Math.ceil(thread/500)/2,maxLen:maxLen,Wmm:Wmm,Hmm:Hmm};
+  var big=0,small=0,thread=0,maxLen=0,stars=0,circles=0;
+  strands.forEach(function(s){big+=s.big;small+=s.small;stars+=s.stars;circles+=s.circles;thread+=s.len+250;maxLen=Math.max(maxLen,s.len)});
+  M={strands:strands,big:big,small:small,stars:stars,circles:circles,paper:stars+circles,thread:Math.ceil(thread/500)/2,maxLen:maxLen,Wmm:Wmm,Hmm:Hmm};
 }
 function formula(s){
   var out=[],cur=null,c=0;
@@ -378,6 +408,9 @@ function sprite(tone,idx,d,px){
   g.beginPath();g.arc(cx,cx,r*0.78,3.5,4.6);g.stroke();
   sprites.set(key,c);return c;
 }
+function starPoints(){var points=[];for(var k=0;k<10;k++){var a=-Math.PI/2+k*Math.PI/5,r=k%2?.45:1;points.push({x:Math.cos(a)*r/(2*Math.cos(Math.PI/10)),y:(Math.sin(a)*r+(1-Math.cos(Math.PI/5))/2)/(1+Math.cos(Math.PI/5))})}return points}
+function itemPath(g,x,y,r,star){if(star){starPoints().forEach(function(p,i){if(i===0)g.moveTo(x+p.x*r*2,y+p.y*r*2);else g.lineTo(x+p.x*r*2,y+p.y*r*2)});g.closePath()}else{g.moveTo(x+r,y);g.arc(x,y,r,0,Math.PI*2)}}
+function paperSprite(shape,px){px=Math.max(4,Math.ceil(px));var pal=paperPalette().c,key="paper|"+pal.join()+"|"+shape+"|"+px,hit=sprites.get(key);if(hit)return hit;if(sprites.size>100)sprites.clear();var c=document.createElement("canvas");c.width=c.height=px+4;var g=c.getContext("2d"),r=px/2,x=r+2;g.beginPath();itemPath(g,x,x,r,shape==="star");g.save();g.clip();var gr=g.createLinearGradient(0,0,px,px);gr.addColorStop(0,pal[1]);gr.addColorStop(.25,pal[0]);gr.addColorStop(.48,pal[2]);gr.addColorStop(.62,"#ffffff");gr.addColorStop(.78,pal[3]);gr.addColorStop(1,pal[1]);g.fillStyle=gr;g.fillRect(0,0,px+4,px+4);g.restore();g.strokeStyle=pal[1];g.lineWidth=.8;g.stroke();sprites.set(key,c);return c}
 function geom(cw,ch){
   var sw=M.Wmm+300, sh=M.Hmm+290, sc=Math.min(cw/sw,ch/sh);
   return {sc:sc,x0:(cw-M.Wmm*sc)/2,y0:(ch-sh*sc)/2+130*sc};
@@ -453,7 +486,7 @@ function drawShells(g,G,time,dpr){
     var ox=(5+L*3)*sc,oy=(8+L*4)*sc;
     pos.forEach(function(p){p.s.items.forEach(function(it){
       var r=it.d/2*sc,x=p.x+p.sin*it.y*sc+ox,y=G.y0+p.cos*it.y*sc+oy;
-      g.moveTo(x+r,y);g.ellipse(x,y,r*0.92,r,0,0,6.2832);
+      itemPath(g,x,y,r,isPaper(it)&&it.shape==="star");
     })});
     g.fill();
     g.strokeStyle=wall.dark?"rgba(255,255,255,.5)":"rgba(80,85,90,.4)";g.lineWidth=Math.max(0.5,0.8*sc);g.beginPath();
@@ -463,7 +496,7 @@ function drawShells(g,G,time,dpr){
     pos.forEach(function(p){p.s.items.forEach(function(it){
       var dp=it.d*sc,r=dp/2,x=p.x+p.sin*it.y*sc,y=G.y0+p.cos*it.y*sc;
       var tw=0.82+0.18*Math.cos((P.sway?time*it.sp:0)+it.ph);
-      var sp=sprite(P.tone,it.tone,it.d,dp*dpr);
+      var sp=isPaper(it)?paperSprite(it.shape,dp*dpr):sprite(P.tone,it.tone,it.d,dp*dpr);
       g.drawImage(sp,x-r*tw,y-r,dp*tw,dp);
     })});
     g.globalAlpha=1;
@@ -488,8 +521,8 @@ function drawScheme(g,cw,ch){
       var x=G.x0+s.x*sc;
       g.strokeStyle=col;g.lineWidth=0.7;g.beginPath();g.moveTo(x,G.y0);g.lineTo(x,G.y0+s.len*sc);g.stroke();
       s.items.forEach(function(it){
-        g.beginPath();g.arc(x,G.y0+it.y*sc,it.d/2*sc,0,6.2832);
-        g.fillStyle=it.d===40?"rgba(225,232,235,.85)":"#ffffff";g.fill();g.lineWidth=1;g.stroke();
+        g.beginPath();itemPath(g,x,G.y0+it.y*sc,it.d/2*sc,isPaper(it)&&it.shape==="star");
+        g.fillStyle=isPaper(it)?paperPalette().c[2]:it.d===40?"rgba(225,232,235,.85)":"#ffffff";g.fill();g.lineWidth=1;g.stroke();
       });
       g.fillStyle=col;g.font="600 "+fs+"px system-ui,sans-serif";g.textAlign="center";g.textBaseline="alphabetic";
       g.fillText(s.no,x,G.y0-6-L*(fs+3));
@@ -582,17 +615,16 @@ function build3d(){
     var rod=new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.7,W+10,14),L?wood.clone():wood);
     rod.rotation.z=Math.PI/2;rod.position.set(0,rodY+0.7,9-L*3);rod.castShadow=true;g.add(rod);
   }
-  // ракушки
-  T.refs=[];
-  M.strands.forEach(function(s){s.items.forEach(function(it){T.refs.push({s:s,it:it})})});
-  var tex=new THREE.CanvasTexture(sprite("white",0,40,252));tex.encoding=THREE.sRGBEncoding;
-  var mat=new THREE.MeshPhongMaterial({color:0xffffff,map:tex,specular:0xaaaaaa,shininess:70,transparent:true,opacity:0.93,alphaTest:0.3,side:THREE.DoubleSide});
-  var im=new THREE.InstancedMesh(new THREE.CircleGeometry(0.5,28),mat,T.refs.length);
-  im.castShadow=true;im.frustumCulled=false;
-  var col=new THREE.Color();
-  T.refs.forEach(function(r,i){col.set(TONES[P.tone][r.it.tone][0]);im.setColorAt(i,col)});
-  if(im.instanceColor) im.instanceColor.needsUpdate=true;
-  T.im=im;g.add(im);
+  // Shells, paper circles and paper stars use separate instanced batches.
+  T.refs=[];T.meshes=[];
+  var all=[];M.strands.forEach(function(s){s.items.forEach(function(it){all.push({s:s,it:it})})});
+  ["shell","circle","star"].forEach(function(type){var list=all.filter(function(r){return type==="shell"?!isPaper(r.it):isPaper(r.it)&&r.it.shape===type});if(!list.length)return;
+    var tex=new THREE.CanvasTexture(type==="shell"?sprite("white",0,40,252):paperSprite(type,252));tex.encoding=THREE.sRGBEncoding;
+    var mat=new THREE.MeshPhongMaterial({color:0xffffff,map:tex,specular:type==="shell"?0xaaaaaa:paperPalette().c[0],shininess:type==="shell"?70:130,transparent:type==="shell",opacity:type==="shell"?.93:1,alphaTest:.3,side:THREE.DoubleSide});
+    var geometry;if(type==="star"){var sh=new THREE.Shape();starPoints().forEach(function(p,i){if(i===0)sh.moveTo(p.x,-p.y);else sh.lineTo(p.x,-p.y)});sh.closePath();geometry=new THREE.ShapeGeometry(sh);var uv=geometry.attributes.uv;for(var u=0;u<uv.count;u++)uv.setXY(u,uv.getX(u)+.5,uv.getY(u)+.5)}else geometry=new THREE.CircleGeometry(.5,28);
+    var im=new THREE.InstancedMesh(geometry,mat,list.length);im.castShadow=true;im.frustumCulled=false;var col=new THREE.Color();
+    list.forEach(function(r,i){col.set(type==="shell"?TONES[P.tone][r.it.tone][0]:"#ffffff");im.setColorAt(i,col);r.mesh=im;r.index=i;T.refs.push(r)});im.instanceColor.needsUpdate=true;T.meshes.push(im);g.add(im);
+  });
   // нити
   var lg=new THREE.BufferGeometry();T.lpos=new Float32Array(M.strands.length*6);
   lg.setAttribute("position",new THREE.BufferAttribute(T.lpos,3));
@@ -632,9 +664,10 @@ function render3d(time){
     var r=T.refs[i],o=cache.get(r.s),Y=r.it.y/10,dd=r.it.d/10;
     d.position.set(o.x+o.sa*Y,T.rodY-o.ca*Y,o.z+o.sb*Y);
     d.rotation.set(0,(r.it.ph/6.283-0.5)*1.1+(P.sway?Math.sin(time*r.it.sp+r.it.ph)*0.75:0),0);
-    d.scale.set(dd,dd,1);d.updateMatrix();T.im.setMatrixAt(i,d.matrix);
+    d.scale.set(dd,dd,1);d.updateMatrix();r.mesh.setMatrixAt(r.index,d.matrix);
+    if(isPaper(r.it)){var pc=paperPalette().c,blend=(Math.sin(T.th*1.5+d.rotation.y+r.it.ph)+1)/2,col=new THREE.Color(pc[0]).lerp(new THREE.Color(pc[2]),blend*.35);r.mesh.setColorAt(r.index,col)}
   }
-  T.im.instanceMatrix.needsUpdate=true;
+  T.meshes.forEach(function(im){im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true});
   var sp=Math.sin(T.ph);
   T.cam.position.set(T.target.x+T.rad*sp*Math.sin(T.th),Math.max(8,T.target.y+T.rad*Math.cos(T.ph)),T.target.z+T.rad*sp*Math.cos(T.th));
   T.cam.lookAt(T.target);
@@ -669,26 +702,18 @@ var ILL={
   hang:'<path d="M4 6h92M22 6v8M78 6v8"/><rect x="10" y="14" width="80" height="8" rx="4"/><path d="M26 22v24M42 22v14M58 22v14M74 22v24"/><circle class="sh" cx="26" cy="52" r="6"/><circle class="sh" cx="42" cy="42" r="6"/><circle class="sh" cx="58" cy="42" r="6"/><circle class="sh" cx="74" cy="52" r="6"/>'
 };
 function ill(k){return '<svg viewBox="0 0 100 64" aria-hidden="true">'+ILL[k]+'</svg>'}
-function runs(s){
-  var out=[];
-  s.items.forEach(function(it){var l=out[out.length-1];if(l&&l.d===it.d)l.c++;else out.push({d:it.d,c:1})});
-  return out;
-}
-function words(s){
-  return runs(s).map(function(r){
-    var big=r.d===40;
-    if(r.c===1) return big?"большая":"маленькая";
-    return r.c+" "+plural(r.c,big?"большая":"маленькая",big?"большие":"маленькие",big?"больших":"маленьких");
-  }).join(", ");
-}
-function dotsHtml(s,cls){
-  return '<span class="dots'+(cls?" "+cls:"")+'">'+s.items.map(function(it){return it.d===40?'<i class="B"></i>':'<i class="m"></i>'}).join("")+'</span>';
-}
+function words(s){var a=[];s.items.forEach(function(it){var name=itemName(it),last=a[a.length-1];if(last&&last.name===name)last.n++;else a.push({name:name,n:1})});return a.map(function(r){return (r.n>1?r.n+" × ":"")+r.name.toLowerCase()}).join(", ")}
+function itemIcon(it){return isPaper(it)?"paper paper-icon"+(it.shape==="star"?" star-icon":""):it.d===40?"B":"m"}
+function dotsHtml(s,cls){return '<span class="dots'+(cls?" "+cls:"")+'">'+s.items.map(function(it){return '<i class="'+itemIcon(it)+'" title="'+itemName(it)+'"></i>'}).join("")+'</span>'}
+function paperSheets(){var per=Math.floor(210/(P.paperSize+4))*Math.floor(297/(P.paperSize+4));return Math.ceil((Math.ceil(M.circles*1.1)+Math.ceil(M.stars*1.1))*2/per)}
+function paperSummary(){return "Бумага хамелеон: "+M.circles+" кругов и "+M.stars+" звёзд, размер "+P.paperSize+" мм. Палитра «"+paperPalette().name+"»."}
+
 function shopList(){
   var rb=Math.ceil(M.big*1.1),rs=Math.ceil(M.small*1.1),a=[];
   if(M.big) a.push("Большие ракушки, 40 мм — нужно "+M.big+" шт. Купите "+rb+": несколько штук обычно приходят с трещинами.");
   if(M.small) a.push("Маленькие ракушки, 15 мм — нужно "+M.small+" шт. Купите "+rs+".");
   a.push("В магазинах они называются «ракушки капиз круглые с отверстием».");
+  if(M.paper){a.push(paperSummary());a.push("Каждая бумажная фигура — две одинаковые детали, склеенные вокруг нити. С запасом 10% вырежьте "+(Math.ceil(M.circles*1.1)*2)+" круглых и "+(Math.ceil(M.stars*1.1)*2)+" звёздчатых деталей. Ориентир: "+paperSheets()+" листов А4 односторонней бумаги; расчёт с полями 4 мм между заготовками.");a.push("Для бумаги: клей-карандаш или тонкий двусторонний скотч, шаблон звезды и круглый шаблон. На нитях используйте нейтральную жемчужную сторону и выбранные мягкие переливы.")}
   a.push("Прозрачная леска 0,25–0,3 мм — "+fmt(M.thread)+" м. Подойдёт и крепкая белая нитка.");
   a.push("Рейка длиной "+(P.w+10)+" см: деревянная планка, бамбуковая палочка или красивая ветка"+(P.layers>1?". Нужно "+P.layers+" шт. — по одной на каждый ряд":"")+".");
   a.push("Прозрачный клей-гель — капелька под каждую ракушку, чтобы она не съезжала.");
@@ -700,8 +725,9 @@ function stepList(){
   var marks="Отступите 5 см от левого конца рейки и поставьте «ноль». Для каждого ряда возьмите координаты из блока «Разметка рейки». Каждую точку измеряйте от нуля, а не от предыдущей точки: так округление не накопится.";
   a.push({i:"mark",t:"Разметьте рейку",d:marks});
   a.push({i:"cut",t:"Нарежьте леску",d:"Для каждой нити отрежьте кусок на 25 см длиннее самой нити — запас уйдёт на узлы. Точная длина написана в карточке нити. На конец наклейте кусочек скотча с номером, чтобы не перепутать."});
-  a.push({i:"thread",t:"Нанизывайте сверху вниз",d:"В карточке нити кружки нарисованы в том порядке, в каком идут ракушки: большой кружок — большая ракушка, маленький — маленькая. Первую ракушку ставьте в 1,5 см от верха, следующие — "+(P.gap===0?"вплотную друг к другу":"через "+P.gap+" мм друг от друга")+"."});
+  a.push({i:"thread",t:"Собирайте сверху вниз",d:"В карточке каждой нити элементы перечислены сверху вниз, с материалом, размером и точным расстоянием от рейки. Верхний край первого элемента — в 1,5 см от рейки. Между ракушками оставляйте "+P.gap+" мм."+(M.paper?" Возле бумажных фигур оставляйте не меньше "+Math.max(P.gap,P.paperGap)+" мм; порядок и координаты берите из карточки.":"")});
   a.push({i:"knot",t:"Закрепите каждую ракушку",d:"Проденьте леску в дырочку и сразу под ракушкой завяжите узелок или капните клея — так она останется на месте. Если дырочек две, проведите леску через обе."});
+  if(M.paper)a.push({i:"thread",t:"Добавьте бумагу хамелеон",d:(P.paperMode==="separate"?"Бумажные нити соберите отдельно: их номера подписаны «бумажная». Они занимают часть общих мест на рейке; дополнительные рейки не нужны. ":"На смешанных нитях чередуйте материалы строго по карточке. ")+"Для каждой фигуры вырежьте две одинаковые детали, положите леску между ними и склейте изнанками внутрь. Круг измеряйте по диаметру, звезду — от верхнего до нижнего кончика. На звезде используйте одинаковый шаблон и ориентацию обеих деталей. Верхний край каждой фигуры выставляйте по расстоянию от рейки в карточке — зазор возле бумаги "+Math.max(P.gap,P.paperGap)+" мм, между ракушками "+P.gap+" мм."});
   a.push({i:"tie",t:"Привяжите нити к рейке",d:"Каждую нить привяжите двойным узлом на свою точку и капните на узел клея. Номер нити и её место смотрите в карточке. Лишние хвостики срежьте."});
   if(P.layers>1){
     a.push({i:"rows",t:"Соберите остальные ряды",d:"У каждого ряда своя разметка и номера нитей — они указаны выше и в карточках. Эти рейки вешаются за первой, на 3 см ближе к стене. Нити встают в шахматном порядке."});
@@ -711,9 +737,9 @@ function stepList(){
 }
 function paramLine(){
   var sh=$("shape").selectedOptions[0].textContent;
-  return "Ширина "+P.w+" см, самая длинная нить "+Math.round(M.maxLen/10)+" см, всего "+M.strands.length+" "+plural(M.strands.length,"нить","нити","нитей")+(P.layers>1?" в "+P.layers+" ряда":"")+", форма: "+sh.toLowerCase()+". Вариант № "+P.seed+".";
+  return (M.paper?paperSummary()+" ":"")+"Ширина "+P.w+" см, самая длинная нить "+Math.round(M.maxLen/10)+" см, всего "+M.strands.length+" "+plural(M.strands.length,"нить","нити","нитей")+(P.layers>1?" в "+P.layers+" ряда":"")+", форма: "+sh.toLowerCase()+". Вариант № "+P.seed+".";
 }
-var TH="<tr><th>№</th><th>Ряд</th><th>Где висит</th><th>Длина нити</th><th>Отрезать лески</th><th>Ракушки сверху вниз</th></tr>";
+var TH="<tr><th>№</th><th>Ряд</th><th>Где висит</th><th>Длина нити</th><th>Отрезать лески</th><th>Элементы сверху вниз</th></tr>";
 function tableRows(){
   return M.strands.map(function(s){
     return "<tr><td class=\"num\">"+s.no+"</td><td>"+LAYER_NAMES[s.layer]+"</td><td class=\"num\">"+cm(s.x)+" см от нуля</td><td class=\"num\">"+cm(s.len)+" см</td><td class=\"num\">"+cm(s.len+250)+" см</td><td class=\"f\">"+dotsHtml(s)+"<small>"+words(s)+"</small></td></tr>";
@@ -721,19 +747,19 @@ function tableRows(){
 }
 var cur=0,done=new Set(),shellCounts={},progressKey="",progressStore={};
 try{progressStore=JSON.parse(localStorage.getItem("shellgen-progress-v1")||"{}");if(!progressStore||typeof progressStore!=="object"||Array.isArray(progressStore))progressStore={}}catch(e){}
-function assemblyKey(){return JSON.stringify([P.w,P.h,P.n,P.layers,P.shape,P.minlen,P.jitter,P.big,P.pattern,P.gap,P.seed])}
+function assemblyKey(){return JSON.stringify([P.w,P.h,P.n,P.layers,P.shape,P.minlen,P.jitter,P.big,P.pattern,P.gap,P.seed].concat(P.paperMode==="off"?[]:[P.paperMode,P.paperPercent,P.paperSize,P.paperGap,P.paperShapes]))}
 function restoreProgress(){
   var key=assemblyKey();if(progressKey===key)return;progressKey=key;
   var p=progressStore[key]||{};cur=Number.isInteger(p.cur)?p.cur:0;done=new Set(Array.isArray(p.done)?p.done:[]);shellCounts=p.shellCounts&&typeof p.shellCounts==="object"?p.shellCounts:{};
 }
 function saveProgress(){progressStore[progressKey]={cur:cur,done:Array.from(done),shellCounts:shellCounts};try{localStorage.setItem("shellgen-progress-v1",JSON.stringify(progressStore))}catch(e){$("progressNote").textContent="Браузер не даёт сохранить сборку. Скачайте инструкцию и отмечайте готовое на бумаге."}}
-function rulersHtml(){return Array.from({length:P.layers},function(_,L){var a=M.strands.filter(function(s){return s.layer===L});return '<section class="ruler-block"><b>Ряд '+LAYER_NAMES[L]+'</b><div class="ruler-scroll"><div class="ruler" style="min-width:'+Math.max(400,P.n*68)+'px">'+a.map(function(s){return '<span style="left:'+(s.x/M.Wmm*100)+'%"><b>№ '+s.no+'</b><small>'+cm(s.x)+' см</small></span>'}).join('')+'</div></div><p class="note">'+a.map(function(s){return '№ '+s.no+': '+cm(s.x)+' см'}).join(' · ')+'</p></section>'}).join('')}
-function assemblyHtml(s){var count=shellCounts[s.no]||0;return s.items.map(function(it,i){return '<li><button type="button" data-shell="'+i+'" aria-pressed="'+(i<count)+'"><i aria-hidden="true" class="shell-disc'+(it.d===15?' small':'')+'"></i><span>'+(i<count?'✓ ':'')+(i+1)+'. '+(it.d===40?'Большая':'Маленькая')+' ракушка · '+it.d+' мм<small>Верхний край в '+cm(it.y-it.d/2)+' см от рейки</small></span></button></li>'}).join('')}
+function rulersHtml(){return Array.from({length:P.layers},function(_,L){var a=M.strands.filter(function(s){return s.layer===L});return '<section class="ruler-block"><b>Ряд '+LAYER_NAMES[L]+'</b><div class="ruler-scroll"><div class="ruler" style="min-width:'+Math.max(400,P.n*68)+'px">'+a.map(function(s){return '<span style="left:'+(s.x/M.Wmm*100)+'%"><b>№ '+s.no+'</b><small>'+cm(s.x)+' см</small></span>'}).join('')+'</div></div><p class="note">'+a.map(function(s){return '№ '+s.no+' ('+strandKind(s)+'): '+cm(s.x)+' см'}).join(' · ')+'</p></section>'}).join('')}
+function assemblyHtml(s){var count=shellCounts[s.no]||0;return s.items.map(function(it,i){return '<li><button type="button" data-shell="'+i+'" aria-pressed="'+(i<count)+'"><i aria-hidden="true" class="shell-disc '+(isPaper(it)?itemIcon(it):(it.d===15?'small':''))+'"></i><span>'+(i<count?'✓ ':'')+(i+1)+'. '+itemName(it)+'<small>Верхний край в '+cm(it.y-it.d/2)+' см от рейки</small></span></button></li>'}).join('')}
 $("st_dots").onclick=function(e){var b=e.target.closest("[data-shell]");if(!b)return;var s=M.strands[cur],i=Number(b.dataset.shell),old=shellCounts[s.no]||0;shellCounts[s.no]=i<old?i:i+1;if(shellCounts[s.no]===s.items.length)done.add(s.no);else done.delete(s.no);saveProgress();renderStepper()};
 $("st_undo").onclick=function(){var s=M.strands[cur];done.delete(s.no);delete shellCounts[s.no];saveProgress();renderStepper()};
 function renderStepper(){
   var N=M.strands.length;cur=clamp(cur,0,N-1);var s=M.strands[cur];
-  $("st_title").textContent="Нить "+s.no+" из "+N+(P.layers>1?" · ряд "+LAYER_NAMES[s.layer]:"")+(done.has(s.no)?" · собрана":"");
+  $("st_title").textContent="Нить "+s.no+" из "+N+(P.layers>1?" · ряд "+LAYER_NAMES[s.layer]:"")+" · "+strandKind(s)+(done.has(s.no)?" · собрана":"");
   $("st_prog").textContent="Собрано "+done.size+" из "+N;
   $("st_map").innerHTML=M.strands.filter(function(o){return o.layer===s.layer}).map(function(o){
     return '<i'+(o===s?' class="cur"':'')+' style="left:'+(o.x/M.Wmm*100).toFixed(2)+'%"></i>';
@@ -743,7 +769,7 @@ function renderStepper(){
   $("st_info").innerHTML=[
     "Где висит: точка в "+cm(s.x)+" см от нуля"+(P.layers>1?", рейка ряда "+LAYER_NAMES[s.layer]:""),
     "Длина готовой нити: "+cm(s.len)+" см. Леску отрежьте с запасом — "+cm(s.len+250)+" см",
-    "Ракушек: "+cnt.join(" и "),
+    "Ракушек: "+(cnt.join(" и ")||"нет")+(s.paperCount?"; бумага: "+s.circles+" — круги; "+s.stars+" — звёзды":""),
     "По порядку сверху вниз: "+words(s)
   ].map(function(t){return "<li>"+t+"</li>"}).join("");
   $("st_prev").disabled=cur===0;
@@ -762,11 +788,11 @@ function renderGuide(){
   $("stats").innerHTML=[
     [M.big,"ракушек 40 мм"],[M.small,"ракушек 15 мм"],[M.strands.length,plural(M.strands.length,"нить","нити","нитей")],
     [fmt(M.thread)+" м","лески"]
-  ].map(function(s){return "<div class=\"stat\"><b>"+s[0]+"</b><span>"+s[1]+"</span></div>"}).join("");
+  ].concat(M.paper?[[M.circles,"бумажных кругов"],[M.stars,"бумажных звёзд"]]:[]).map(function(s){return "<div class=\"stat\"><b>"+s[0]+"</b><span>"+s[1]+"</span></div>"}).join("");
   $("shop").innerHTML=shopList().map(function(s){return "<li>"+s+"</li>"}).join("");
   $("steps").innerHTML=stepsHtml();$("rulers").innerHTML=rulersHtml();
   $("actualSize").textContent="Высота до "+P.h+" см → в этом варианте "+cm(M.maxLen)+" см. Ширина "+P.w+" см; рейка "+(P.w+10)+" см.";
-  var diameter=M.big?40:15,pitch=M.Wmm/P.n;$("density").hidden=pitch>=diameter;$("densityText").textContent="Между нитями "+fmt(pitch)+" мм, диаметр ракушек до "+diameter+" мм: соседние ракушки в одном ряду могут перекрываться. Для более свободной раскладки уменьшите число нитей до "+Math.max(4,Math.floor(M.Wmm/diameter))+".";
+  var diameter=maxDiameter(),pitch=M.Wmm/P.n;$("density").hidden=pitch>=diameter;$("densityText").textContent="Между нитями "+fmt(pitch)+" мм, размер элементов до "+diameter+" мм: соседние элементы в одном ряду могут перекрываться. Для более свободной раскладки уменьшите число нитей до "+Math.max(4,Math.floor(M.Wmm/diameter))+".";
   $("thead").innerHTML=TH;$("tbody").innerHTML=tableRows();
   $("seedOut").textContent=P.seed;
   renderStepper();
@@ -777,8 +803,8 @@ function guideText(){
   t.push("","РАЗМЕТКА: все расстояния от нуля, который находится в 5 см от левого конца рейки.");M.strands.forEach(function(s){t.push("Ряд "+LAYER_NAMES[s.layer]+", № "+s.no+": "+cm(s.x)+" см")});
   t.push("","КАК СОБИРАТЬ");
   stepList().forEach(function(s,i){t.push((i+1)+". "+s.t+". "+s.d)});
-  t.push("","НИТИ ПО ОДНОЙ (ракушки перечислены сверху вниз)");
-  M.strands.forEach(function(s){t.push("Нить "+s.no+(P.layers>1?", ряд "+LAYER_NAMES[s.layer]:"")+": точка в "+cm(s.x)+" см от нуля, длина "+cm(s.len)+" см, лески отрезать "+cm(s.len+250)+" см. Ракушки: "+words(s)+".")});
+  t.push("","НИТИ ПО ОДНОЙ (элементы перечислены сверху вниз)");
+  M.strands.forEach(function(s){t.push("Нить "+s.no+(P.layers>1?", ряд "+LAYER_NAMES[s.layer]:"")+": точка в "+cm(s.x)+" см от нуля, длина "+cm(s.len)+" см, лески отрезать "+cm(s.len+250)+" см. Элементы: "+words(s)+".")});
   return t.join("\n");
 }
 function snapshot(kind,w,h){
@@ -786,7 +812,8 @@ function snapshot(kind,w,h){
   if(kind==="scheme") drawScheme(g,w,h); else drawScene(g,w,h,0,1,null);
   return c;
 }
-function printCards(){return M.strands.map(function(s){return '<article class="print-card"><h3>□ Нить '+s.no+' · ряд '+LAYER_NAMES[s.layer]+'</h3><p>Отметка '+cm(s.x)+' см от нуля · готовая нить '+cm(s.len)+' см · отрежьте '+cm(s.len+250)+' см лески.</p><ol>'+s.items.map(function(it){return '<li>□ '+(it.d===40?'Большая · 40 мм':'Маленькая · 15 мм')+' — верхний край в '+cm(it.y-it.d/2)+' см от рейки</li>'}).join('')+'</ol></article>'}).join('')}
+function templateSvg(){var d=P.paperSize,points=starPoints().map(function(p){return (110+p.x*d)+","+(40+p.y*d)}).join(" ");return '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Шаблоны бумажных фигур" style="max-width:100%;height:auto" width="160mm" height="105mm" viewBox="0 0 160 105"><rect width="160" height="105" fill="white"/><g fill="none" stroke="#18242c" stroke-width=".25">'+(M.circles?'<circle cx="40" cy="40" r="'+d/2+'"/>':'')+(M.stars?'<polygon points="'+points+'"/>':'')+'<path d="M10 94h50m-50-2v4m50-4v4"/></g><g fill="#18242c" font-family="sans-serif" font-size="3.5">'+(M.circles?'<text x="12" y="78">Круг · '+d+' мм</text>':'')+(M.stars?'<text x="82" y="78">Звезда · '+d+' мм</text>':'')+'<text x="10" y="87">Печать 100% · без подгонки</text><text x="10" y="102">Проверьте линейкой: отрезок 50 мм</text></g></svg>'}
+function printCards(){return M.strands.map(function(s){return '<article class="print-card"><h3>□ Нить '+s.no+' · ряд '+LAYER_NAMES[s.layer]+' · '+strandKind(s)+'</h3><p>Отметка '+cm(s.x)+' см от нуля · готовая нить '+cm(s.len)+' см · отрежьте '+cm(s.len+250)+' см лески.</p><ol>'+s.items.map(function(it){return '<li>□ '+itemName(it)+' — верхний край в '+cm(it.y-it.d/2)+' см от рейки</li>'}).join('')+'</ol></article>'}).join('')}
 function guideHtml(){
   var a=snapshot("wall",1400,1050).toDataURL("image/jpeg",0.88),b=snapshot("scheme",1600,1200).toDataURL("image/png");
   return "<!doctype html><html lang=\"ru\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Подвески из ракушек — как собрать</title><style>"+
@@ -798,7 +825,8 @@ function guideHtml(){
   "<h2>Что купить</h2><ul>"+shopList().map(function(s){return "<li>"+s+"</li>"}).join("")+"</ul>"+
   "<h2>Разметка рейки</h2><p>Ноль — в 5 см от левого конца рейки. Каждую точку отмеряйте от нуля; рисунок не в натуральную величину.</p>"+rulersHtml()+
   "<h2>Как собирать</h2><ol class=\"steps\">"+stepsHtml()+"</ol>"+
-  "<h2>Общая схема</h2><p class=\"note\">Вид спереди. Числа над рейкой — номера нитей. Большой круг — ракушка 40 мм, маленький — 15 мм.</p><img src=\""+b+"\" alt=\"Схема нитей\">"+
+  "<h2>Общая схема</h2><p class=\"note\">Вид спереди. Числа над рейкой — номера нитей. Большой обычный круг — ракушка 40 мм, маленький — 15 мм; цветные круги и звёзды — бумага хамелеон.</p><img src=\""+b+"\" alt=\"Схема нитей\">"+
+  (M.paper?"<h2>Шаблоны бумажных фигур</h2><p>Распечатайте в масштабе 100%, без подгонки к странице. Проверьте контрольный отрезок: 50 мм. Для каждой фигуры нужны две детали.</p>"+templateSvg():"")+
   "<h2>Карточки нитей</h2><p>Собирайте сверху вниз, отмечайте каждую ракушку и готовую нить. Все вертикальные расстояния отсчитываются от рейки, горизонтальные — от нуля в 5 см от её левого конца.</p>"+printCards()+"</body></html>";
 }
 /* ---------- сохранение ---------- */
@@ -820,6 +848,7 @@ function saveFile(name,data,mime){
     }catch(e){toast("Не удалось сохранить файл. Скопируйте инструкцию текстом.")}
   });
 }
+$("saveTemplates").onclick=function(){saveFile("rakushki-paper-templates.svg",templateSvg(),"image/svg+xml")};
 function saveGuide(){saveFile("rakushki-instrukciya.html",guideHtml(),"text/html")}
 $("saveGuide").onclick=saveGuide;$("saveGuide2").onclick=saveGuide;
 $("savePng").onclick=function(){
@@ -837,7 +866,7 @@ $("copyText").onclick=function(){
 };
 
 /* ---------- управление ---------- */
-var UNITS={w:" см",h:" см",n:"",layers:"",minlen:" %",jitter:" %",big:" %",gap:" мм"};
+var UNITS={paperPercent:" %",paperSize:" мм",paperGap:" мм",w:" см",h:" см",n:"",layers:"",minlen:" %",jitter:" %",big:" %",gap:" мм"};
 function syncUI(){
   Object.keys(UNITS).forEach(function(k){
     $(k).value=P[k];
@@ -848,20 +877,26 @@ function syncUI(){
     if(k==="gap") txt=P.gap===0?"вплотную":P.gap+" мм";
     $("o_"+k).textContent=txt;
   });
-  ["shape","pattern","tone"].forEach(function(k){$(k).value=P[k]});
+  ["shape","pattern","tone","paperMode","paperShapes","paperPalette"].forEach(function(k){$(k).value=P[k]});
   ["light","sway","dims"].forEach(function(k){$(k).checked=P[k]});
   Array.prototype.forEach.call($("walls").children,function(b){b.setAttribute("aria-pressed",b.dataset.wall===P.wall)});
   $("v_wall").setAttribute("aria-pressed",P.view==="wall");$("v_scheme").setAttribute("aria-pressed",P.view==="scheme");
   $("v_3d").setAttribute("aria-pressed",P.view==="3d");
+  $("paperOptions").hidden=P.paperMode==="off";
+  $("paperPercentLabel").textContent=P.paperMode==="mixed"?"Доля бумажных элементов":"Бумажных нитей";
+  $("paperModeNote").textContent=P.paperMode==="mixed"?"Доля приблизительная: элементы выбираются случайно, а их размер влияет на количество. Ракушки и бумага собираются на одной нити.":"Часть общих мест на рейке занимают лёгкие бумажные нити. Остальные — только ракушки. Количество мест задаётся выше; число бумажных нитей округляется до целого, минимум одна в ряду.";
+  var palette=paperPalette();$("paperSwatches").innerHTML=palette.c.map(function(c){return '<i aria-hidden="true" style="background:'+c+'"></i>'}).join('');$("paletteNote").textContent=palette.name+". Перламутр остаётся основой, бумага добавляет мягкий перелив.";
+  var pc=palette.c;["st_dots","tbody"].forEach(function(id){$(id).style.setProperty("--paper-a",pc[0]);$(id).style.setProperty("--paper-b",pc[1]);$(id).style.setProperty("--paper-c",pc[2])});
   cv.hidden=P.view==="3d";cv3.hidden=P.view!=="3d";$("hint3").hidden=P.view!=="3d";
 }
 function update(rebuild){
   if(rebuild!==false) build();
   wallC=null;if(T3) T3.dirty=true;syncUI();renderGuide();kick();
   try{localStorage.setItem("shellgen",JSON.stringify(P))}catch(e){}
+  if(location.hash.indexOf("#v=1")===0)history.replaceState(null,"",variantUrl());
 }
 Object.keys(UNITS).forEach(function(k){$(k).addEventListener("input",function(){P[k]=+this.value;update()})});
-["shape","pattern","tone"].forEach(function(k){$(k).addEventListener("change",function(){P[k]=this.value;update()})});
+["shape","pattern","tone","paperMode","paperShapes","paperPalette"].forEach(function(k){$(k).addEventListener("change",function(){P[k]=this.value;update()})});
 ["light","sway","dims"].forEach(function(k){$(k).addEventListener("change",function(){P[k]=this.checked;update(false)})});
 WALLS.forEach(function(w){
   var b=document.createElement("button");b.type="button";b.dataset.wall=w.id;b.title=w.name;b.setAttribute("aria-label","Стена: "+w.name);
@@ -870,7 +905,7 @@ WALLS.forEach(function(w){
   if(w.id==="wood") b.style.background="repeating-linear-gradient(90deg,#b78a5d 0 10px,#8d6238 10px 11px)";
   b.onclick=function(){P.wall=w.id;update(false)};$("walls").appendChild(b);
 });
-$("relaxDensity").onclick=function(){P.n=clamp(Math.floor(M.Wmm/(M.big?40:15)),4,40);update()};
+$("relaxDensity").onclick=function(){P.n=clamp(Math.floor(M.Wmm/maxDiameter()),4,40);update()};
 function variantUrl(){var q=new URLSearchParams({v:"1"});Object.keys(DEF).forEach(function(k){q.set(k,String(P[k]))});return location.origin+location.pathname+"#"+q.toString()}
 $("shareVariant").onclick=function(){var url=variantUrl();$("shareLink").hidden=false;$("shareUrl").value=url;try{navigator.clipboard.writeText(url).then(function(){toast("Ссылка на этот вариант скопирована")},function(){toast("Скопируйте ссылку из поля под кнопками")})}catch(e){$("shareUrl").select();toast("Скопируйте ссылку из поля под кнопками")}};
 window.addEventListener("hashchange",function(){var a=sharedParams();if(a){P=a;update()}});
