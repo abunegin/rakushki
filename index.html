@@ -210,7 +210,7 @@ details>p{margin:10px 0}
         <h2>Стена и сцена</h2>
         <div class="walls" id="walls"></div>
         <label class="check"><input type="checkbox" id="light"> Гирлянда-подсветка за ракушками</label>
-        <label class="check"><input type="checkbox" id="sway"> Лёгкое покачивание</label>
+        <label class="check"><input type="checkbox" id="sway"> Лёгкое покачивание</label><div class="row" id="windSettings"><div class="top"><label for="wind">Сила сквозняка в 3D</label><output id="o_wind"></output></div><input type="range" id="wind" min="0" max="100" step="5"><small class="note">Нити качаются вместе с воздухом, фигурки поворачиваются и наклоняются каждая в своём ритме.</small></div>
         <label class="check"><input type="checkbox" id="dims"> Показывать размеры</label>
       </div>
     </div>
@@ -272,7 +272,7 @@ details>p{margin:10px 0}
 (function(){
 "use strict";
 var TOP = 15; // мм от рейки до первой ракушки
-var DEF = {w:90,h:100,n:16,layers:2,shape:"arch",minlen:45,jitter:15,big:55,pattern:"mix",gap:6,tone:"white",wall:"peach",light:false,sway:true,dims:true,seed:1207,view:"wall",paperMode:"off",paperPercent:30,paperSize:35,paperGap:60,paperShapes:"both",paperPalette:"auto",paperColor1:"#f2eee7",paperColor2:"#cbd5db",paperColor3:"#e3cfdc",paperColor4:"#cfdfd8",use_circle:true,size_circle:0,two_circle:false,size2_circle:55,use_star:true,size_star:0,two_star:false,size2_star:55,use_heart:false,size_heart:0,two_heart:false,size2_heart:55,use_diamond:false,size_diamond:0,two_diamond:false,size2_diamond:55,use_drop:false,size_drop:0,two_drop:false,size2_drop:55,origamiPalette:"nude",use_hummingbird:false,size_hummingbird:80,two_hummingbird:false,size2_hummingbird:120,use_boat:false,size_boat:80,two_boat:false,size2_boat:120,use_pterodactyl:false,size_pterodactyl:80,two_pterodactyl:false,size2_pterodactyl:120,use_airplane:false,size_airplane:80,two_airplane:false,size2_airplane:120};
+var DEF = {w:90,h:100,n:16,layers:2,shape:"arch",minlen:45,jitter:15,big:55,pattern:"mix",gap:6,tone:"white",wall:"peach",light:false,sway:true,wind:45,dims:true,seed:1207,view:"wall",paperMode:"off",paperPercent:30,paperSize:35,paperGap:60,paperShapes:"both",paperPalette:"auto",paperColor1:"#f2eee7",paperColor2:"#cbd5db",paperColor3:"#e3cfdc",paperColor4:"#cfdfd8",use_circle:true,size_circle:0,two_circle:false,size2_circle:55,use_star:true,size_star:0,two_star:false,size2_star:55,use_heart:false,size_heart:0,two_heart:false,size2_heart:55,use_diamond:false,size_diamond:0,two_diamond:false,size2_diamond:55,use_drop:false,size_drop:0,two_drop:false,size2_drop:55,origamiPalette:"nude",use_hummingbird:false,size_hummingbird:80,two_hummingbird:false,size2_hummingbird:120,use_boat:false,size_boat:80,two_boat:false,size2_boat:120,use_pterodactyl:false,size_pterodactyl:80,two_pterodactyl:false,size2_pterodactyl:120,use_airplane:false,size_airplane:80,two_airplane:false,size2_airplane:120};
 var PRESETS = {
   nudeOrigami:{paperMode:"only",paperShapes:"custom",paperPalette:"nude",origamiPalette:"nude",n:9,layers:1,h:100,w:100,paperGap:80,use_circle:false,use_star:false,use_heart:false,use_diamond:false,use_drop:false,use_hummingbird:true,use_boat:true,use_pterodactyl:true,use_airplane:true,size_hummingbird:80,size_boat:80,size_pterodactyl:100,size_airplane:80,two_hummingbird:false,two_boat:false,two_pterodactyl:false,two_airplane:false},
   pearlPaper:{n:16,layers:2,shape:"arch",minlen:45,jitter:15,big:55,pattern:"mix",gap:6,tone:"white",paperMode:"separate",paperPercent:30,paperSize:35,paperGap:60,paperShapes:"both",paperPalette:"auto"},
@@ -321,7 +321,7 @@ var LAYER_COLORS = ["#1b2a33","#0d6b74","#a2542f"];
 
 var P = Object.assign({}, DEF);
 try{ var saved = JSON.parse(localStorage.getItem("shellgen")||"null"); if(saved) for(var k in DEF) if(typeof saved[k]===typeof DEF[k]) P[k]=saved[k]; }catch(e){}
-var LIMITS={paperPercent:[10,70,5],paperSize:[20,60,5],paperGap:[20,140,5],w:[40,200,5],h:[30,200,5],n:[4,40,1],layers:[1,3,1],minlen:[15,100,5],jitter:[0,40,1],big:[0,100,5],gap:[0,40,1],seed:[0,999999999,1]};
+var LIMITS={wind:[0,100,5],paperPercent:[10,70,5],paperSize:[20,60,5],paperGap:[20,140,5],w:[40,200,5],h:[30,200,5],n:[4,40,1],layers:[1,3,1],minlen:[15,100,5],jitter:[0,40,1],big:[0,100,5],gap:[0,40,1],seed:[0,999999999,1]};
 var ENUMS={paperMode:["off","separate","mixed","only"],paperShapes:["both","circles","stars","custom"],origamiPalette:["nude","sand","rose"],paperPalette:["auto","nude","silver","champagne","rose","sage","custom"],shape:["arch","drop","left","right","wave","flat"],pattern:["mix","rhythm","bigtop","bigbottom"],tone:Object.keys(TONES),wall:WALLS.map(function(w){return w.id}),view:["wall","scheme","3d"]};
 LIMITS.size_circle=[0,80,5];LIMITS.size2_circle=[10,80,5];
 LIMITS.size_star=[0,80,5];LIMITS.size2_star=[10,80,5];
@@ -705,6 +705,9 @@ function build3d(){
   if(key!==T.sizeKey){T.sizeKey=key;T.rad=Math.max(W,maxL)*1.3+70}
   T.dirty=false;
 }
+// All strands share a slow gust; individual harmonics keep their movement varied.
+function strandMotion(s,time){var strength=P.sway?P.wind/100:0,phase=s.ph,slow=time*.55,air=Math.sin(slow)+.35*Math.sin(time*.23+1.1),sx=strength*(.038*air+.018*Math.sin(time*.91+phase)),sz=strength*(.023*Math.sin(time*.47+.8)+.014*Math.sin(time*.73+phase*1.7));return {sx:sx,sz:sz,cy:Math.sqrt(Math.max(0,1-sx*sx-sz*sz))}}
+function ornamentMotion(it,time){var strength=P.sway?P.wind/100:0,folded=isOrigami(it),speed=Math.sqrt(80/it.d)*(folded?.72:.9),t=time*speed,phase=it.ph,base=(phase/6.283-.5)*(folded?1.4:1.1),gust=Math.sin(time*.55);return {x:strength*(folded?.22:.045)*(Math.sin(t*.83+phase)+.22*gust),y:base+strength*(folded?1.25:.75)*(Math.sin(t*.61+phase)+.23*Math.sin(t*.29+phase*1.3)),z:strength*(folded?.2:.035)*(Math.sin(t*.71+phase*1.4)+.2*gust)}}
 function render3d(time){
   if(!init3d()) return false;
   var T=T3,px=CW+"x"+CH+"x"+DPR;
@@ -712,8 +715,8 @@ function render3d(time){
   if(T.dirty) build3d();
   var d=T.dummy,li=0,lp=T.lpos,cache=new Map(),spacing=layerSpacing()/10,rear=origamiGroups().length?spacing/2+2:3+(3-P.layers)*3;
   M.strands.forEach(function(s){
-    var a=P.sway?s.amp*Math.sin(time*0.9+s.ph):0,b=P.sway?s.amp*0.9*Math.sin(time*0.7+s.ph*1.7):0;
-    var o={x:s.x/10-T.W/2,z:rear+(P.layers-1-s.layer)*spacing,sa:Math.sin(a),ca:Math.cos(a),sb:Math.sin(b)};cache.set(s,o);
+    var motion=strandMotion(s,time);
+    var o={x:s.x/10-T.W/2,z:rear+(P.layers-1-s.layer)*spacing,sa:motion.sx,ca:motion.cy,sb:motion.sz};cache.set(s,o);
     var Y=s.len/10;
     lp[li++]=o.x;lp[li++]=T.rodY;lp[li++]=o.z;lp[li++]=o.x+o.sa*Y;lp[li++]=T.rodY-o.ca*Y;lp[li++]=o.z+o.sb*Y;
   });
@@ -721,7 +724,7 @@ function render3d(time){
   for(var i=0;i<T.refs.length;i++){
     var r=T.refs[i],o=cache.get(r.s),Y=r.it.y/10,dd=r.it.d/10;
     d.position.set(o.x+o.sa*Y,T.rodY-o.ca*Y,o.z+o.sb*Y);
-    d.rotation.set(0,(r.it.ph/6.283-0.5)*1.1+(P.sway?Math.sin(time*r.it.sp+r.it.ph)*0.75:0),0);
+    var rotation=ornamentMotion(r.it,time);d.rotation.set(rotation.x,rotation.y,rotation.z);
     d.scale.set(dd,dd,isOrigami(r.it)?dd:1);d.updateMatrix();r.mesh.setMatrixAt(r.index,d.matrix);
     if(isPaper(r.it)&&!isOrigami(r.it)){var pc=paperPalette().c,blend=(Math.sin(T.th*1.5+d.rotation.y+r.it.ph)+1)/2,col=new THREE.Color(pc[0]).lerp(new THREE.Color(pc[2]),blend*.35);r.mesh.setColorAt(r.index,col)}
   }
@@ -933,7 +936,7 @@ $("copyText").onclick=function(){
 };
 
 /* ---------- управление ---------- */
-var UNITS={paperPercent:" %",paperGap:" мм",w:" см",h:" см",n:"",layers:"",minlen:" %",jitter:" %",big:" %",gap:" мм"};
+var UNITS={wind:" %",paperPercent:" %",paperGap:" мм",w:" см",h:" см",n:"",layers:"",minlen:" %",jitter:" %",big:" %",gap:" мм"};
 function syncUI(){
   Object.keys(UNITS).forEach(function(k){
     $(k).value=P[k];
@@ -949,6 +952,7 @@ function syncUI(){
   Array.prototype.forEach.call($("walls").children,function(b){b.setAttribute("aria-pressed",b.dataset.wall===P.wall)});
   $("v_wall").setAttribute("aria-pressed",P.view==="wall");$("v_scheme").setAttribute("aria-pressed",P.view==="scheme");
   $("v_3d").setAttribute("aria-pressed",P.view==="3d");
+  $("windSettings").hidden=!P.sway||P.view!=="3d";
   $("paperOptions").hidden=P.paperMode==="off";$("paperGroup").hidden=P.paperMode==="off";$("shellGroup").hidden=P.paperMode==="only";
   var active=enabledShapes().map(function(s){return s.id});PAPER_SHAPES.forEach(function(s){var on=active.indexOf(s.id)!==-1;$("use_"+s.id).checked=on;$("details_"+s.id).hidden=!on;$("size_"+s.id).value=shapeSizes(s.id)[0];$("two_"+s.id).checked=P["two_"+s.id];$("size2_"+s.id).value=P["size2_"+s.id];$("second_"+s.id).hidden=!P["two_"+s.id]});
   $("shellSettings").disabled=P.paperMode==="only";$("shellDisabled").hidden=P.paperMode!=="only";
@@ -971,7 +975,7 @@ function update(rebuild){
 [1,2,3,4].forEach(function(i){$("paperColor"+i).addEventListener("input",function(){P["paperColor"+i]=this.value;update(false)});$("hexColor"+i).addEventListener("input",function(){if(/^#[0-9a-f]{6}$/i.test(this.value.trim())){P["paperColor"+i]=this.value.trim().toLowerCase();update(false)}});$("hexColor"+i).addEventListener("change",function(){var v=this.value.trim();if(!/^#[0-9a-f]{6}$/i.test(v)){this.setAttribute("aria-invalid","true");toast("Введите цвет в формате #RRGGBB, например #d8afc4");return}P["paperColor"+i]=v.toLowerCase();update(false)})});
 PAPER_SHAPES.forEach(function(s){$("use_"+s.id).onchange=function(){var ids=enabledShapes().map(function(s){return s.id});if(!this.checked&&ids.length===1&&ids[0]===s.id){this.checked=true;toast("Оставьте хотя бы одну бумажную форму");return}PAPER_SHAPES.forEach(function(type){P["use_"+type.id]=ids.indexOf(type.id)!==-1});P["use_"+s.id]=this.checked;P.paperShapes="custom";update()};$("two_"+s.id).onchange=function(){P["two_"+s.id]=this.checked;update()};["size_","size2_"].forEach(function(prefix){$(prefix+s.id).onchange=function(){if(!this.value||!Number.isFinite(Number(this.value))){syncUI();return}P[prefix+s.id]=clamp(Math.round(Number(this.value)/5)*5,s.origami?40:10,s.origami?160:80);update()}})});
 $("copyPalette").onclick=function(){var key={white:"silver",cream:"champagne",pink:"rose",mixed:"champagne"}[P.tone];PAPER_PALETTES[key].c.forEach(function(c,i){P["paperColor"+(i+1)]=c});update(false)};
-Object.keys(UNITS).forEach(function(k){$(k).addEventListener("input",function(){P[k]=+this.value;update()})});
+Object.keys(UNITS).forEach(function(k){$(k).addEventListener("input",function(){P[k]=+this.value;update(k!=="wind")})});
 ["shape","pattern","tone","paperMode","paperPalette","origamiPalette"].forEach(function(k){$(k).addEventListener("change",function(){P[k]=this.value;update()})});
 ["light","sway","dims"].forEach(function(k){$(k).addEventListener("change",function(){P[k]=this.checked;update(false)})});
 WALLS.forEach(function(w){
