@@ -1,0 +1,24 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const html=fs.readFileSync(__dirname+'/../index.html','utf8'),js=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1];new vm.Script(js);
+const c={window:{},location:{hash:''},URLSearchParams,localStorage:{getItem:()=>null,setItem:()=>{}}};vm.createContext(c);
+vm.runInContext(js.slice(js.indexOf('var TOP'),js.indexOf('/* ---------- отрисовка'))+js.slice(js.indexOf('var cur=0,done='),js.indexOf('function rulersHtml'))+js.slice(js.indexOf('function starPoints'),js.indexOf('function paperSprite'))+js.slice(js.indexOf('function words'),js.indexOf('var cur=0,done='))+js.slice(js.indexOf('var ORIGAMI_GUIDES'),js.indexOf('function printCards')),c);
+const run=s=>vm.runInContext(s,c);run('function fmt(n){return String(n)}function cm(n){return String(n/10)}');
+const ids=['hummingbird','boat','pterodactyl','airplane'];
+for(const id of ids){
+ const m=run('origamiModel("'+id+'")');assert(m.f.length>=8);assert(Math.max(...m.v.map(p=>p.z))-Math.min(...m.v.map(p=>p.z))>.15,id+' must have actual depth');assert.equal(Math.min(...m.v.map(p=>p.y)),-.5);for(const p of m.v)for(const k of ['x','y','z'])assert(Number.isFinite(p[k]));
+ assert(Math.max(...m.v.map(p=>p.x))<=.5);assert(Math.min(...m.v.map(p=>p.x))>=-.5);assert(Math.max(...m.v.map(p=>p.y))<=.5);
+ for(const face of m.f){assert.equal(face.length,3);assert(face.every(i=>m.v[i]));const [a,b,d]=face.map(i=>m.v[i]),u={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},v={x:d.x-a.x,y:d.y-a.y,z:d.z-a.z};assert(Math.hypot(u.y*v.z-u.z*v.y,u.z*v.x-u.x*v.z,u.x*v.y-u.y*v.x)>1e-7,id+' degenerate face '+face)}
+}
+let count=0;
+for(const id of ids)for(const mode of ['only','mixed','separate'])for(const layers of [1,3])for(const pair of [[40,160],[80,120],[160,160]])for(const gap of [20,140]){
+ c.P={...c.DEF,paperMode:mode,paperShapes:'custom',n:12,w:80,h:30,minlen:15,jitter:40,layers,paperGap:gap};for(const shape of c.PAPER_SHAPES)c.P['use_'+shape.id]=shape.id===id;c.P['size_'+id]=pair[0];c.P['size2_'+id]=pair[1];c.P['two_'+id]=true;run('build()');
+ const origami=c.M.strands.flatMap(s=>s.items).filter(it=>it.kind==='paper');assert(origami.length);assert.equal(c.M.paper,origami.length);assert(origami.every(it=>it.shape===id&&pair.includes(it.d)&&[0,1,2,3].includes(it.paperTone)));
+ for(const s of c.M.strands){assert(s.len<=300);s.items.forEach((it,i)=>{assert(it.y-it.d/2>=15);if(i){const previous=s.items[i-1],expected=it.kind==='paper'||previous.kind==='paper'?gap:c.P.gap;assert.equal(it.y-it.d/2-previous.y-previous.d/2,expected)}})}
+ assert.equal(run('flatGroups().length'),0);assert(!run('templateSvg()').includes('<polygon'));const shopping=run('shopList().join(" ")');assert(!shopping.includes('склейте две одинаковые'));assert(shopping.includes('На одну фигурку нужна одна заготовка'));const steps=run('stepList()');assert(steps.some(s=>s.t==='Подвесьте объёмные фигурки'));assert(!steps.some(s=>s.t==='Добавьте плоские фигуры'));const guide=run('origamiGuideHtml()');assert(guide.includes(c.ORIGAMI_GUIDES[id].url));assert.equal((guide.match(/<article /g)||[]).length,1);assert(run('templatesDocument()').includes(c.ORIGAMI_GUIDES[id].url));
+ const max=Math.max(...origami.map(it=>it.d));assert.equal(run('layerSpacing()'),max+20);assert(run('layerZ(P.layers-1)')>max/20);count++;
+}
+c.P={...c.DEF,...c.PRESETS.nudeOrigami};run('build()');assert.equal(c.M.big+c.M.small,0);assert.equal(new Set(c.M.strands.flatMap(s=>s.items).map(it=>it.shape)).size,4);assert.equal(run('origamiPalette().name'),'Бежевый нюд');
+const original=JSON.stringify(c.M);run('build()');assert.equal(JSON.stringify(c.M),original);run('done.add(1);saveProgress();P.origamiPalette="rose";build()');assert(c.done.has(1));run('P.size_hummingbird=100;build()');assert.equal(c.done.size,0);
+c.P={...c.DEF,...c.PRESETS.nudeOrigami,use_circle:true,size_circle:25};run('build()');assert(run('flatGroups().length')>0);assert.equal((run('templateSvg()').match(/<polygon /g)||[]).length,1);assert(run('shopList().join(" ")').includes('склейте две одинаковые'));assert(run('stepList().some(function(s){return s.t==="Добавьте плоские фигуры"})'));
+c.location.hash='#v=1&paperMode=only&paperShapes=custom&use_circle=false&use_star=false&use_hummingbird=true&size_hummingbird=160&two_hummingbird=true&size2_hummingbird=40&origamiPalette=rose';const p=run('sharedParams()');assert.equal(p.use_hummingbird,true);assert.equal(p.size_hummingbird,160);assert.equal(p.size2_hummingbird,40);assert.equal(p.origamiPalette,'rose');assert.equal(run('validParams({size_boat:0,size2_boat:999}).size_boat'),40);assert.equal(run('validParams({size_boat:0,size2_boat:999}).size2_boat'),160);
+console.log('PASS: '+count+' origami models; nondegenerate folded meshes, depth, all modes, dual sizes, palette, quantities, A4 overflow, templates, source links, progress and volume-aware rows');
